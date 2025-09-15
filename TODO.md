@@ -1,0 +1,6 @@
+- [x] Remove WhatsAppButton import and usage from components/client-layout.tsx
+- [x] Add WhatsApp button to the header in components/support-chat.tsx next to Phone and Video buttons
+- [ ] Add +2540112081866 to the Phone icon in support-chat.tsx
+- [x] Check and add missing Terms and Privacy Policy links in sign in, sign up, footer
+- [x] Check and add missing Cookie Policy link in footer
+- [x] Create Terms, Privacy Policy, Cookie Policy pages if missing, maintaining site theme

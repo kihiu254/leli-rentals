@@ -1,0 +1,30 @@
+[
+  {
+    "id": "listing-1",
+    "title": "Vintage Camera Collection",
+    "description": "Professional vintage cameras for photography enthusiasts",
+    "price": 35,
+    "category": "equipment",
+    "image": "/professional-equipment-rental.jpg",
+    "status": "active",
+    "bookings": 8,
+    "rating": 4.9,
+    "views": 156,
+    "location": "San Francisco, CA",
+    "createdAt": "2024-10-01T00:00:00.000Z"
+  },
+  {
+    "id": "listing-2",
+    "title": "Mountain Bike",
+    "description": "High-quality mountain bike perfect for trails",
+    "price": 25,
+    "category": "sports",
+    "image": "/mountain-bike-trail.png",
+    "status": "active",
+    "bookings": 5,
+    "rating": 4.7,
+    "views": 89,
+    "location": "Denver, CO",
+    "createdAt": "2024-11-01T00:00:00.000Z"
+  }
+]

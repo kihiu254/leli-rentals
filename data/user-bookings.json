@@ -1,0 +1,14 @@
+[
+  {
+    "id": "booking-1",
+    "listingTitle": "Tesla Model 3",
+    "listingImage": "/luxury-car-rental.png",
+    "owner": "David Kim",
+    "dates": "Dec 15-18, 2024",
+    "totalPrice": 340,
+    "status": "confirmed",
+    "category": "vehicles",
+    "location": "San Francisco, CA",
+    "createdAt": "2024-12-01T00:00:00.000Z"
+  }
+]
