@@ -93,16 +93,21 @@ export default function FavoritesPage() {
     }
   })
 
-  const handleRemoveFavorite = async (favoriteId: string) => {
+  const handleRemoveFavorite = async (favoriteId: string, listingId: string) => {
+    if (!user) return
+    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await favoritesService.removeFromFavorites(user.id, listingId)
+      
+      // Update local state
+      setFavorites(prev => prev.filter(fav => fav.id !== favoriteId))
       
       toast({
         title: "Removed from favorites",
         description: "This item has been removed from your favorites.",
       })
     } catch (error) {
+      console.error("Error removing favorite:", error)
       toast({
         title: "Error removing favorite",
         description: "Please try again.",
@@ -248,7 +253,7 @@ export default function FavoritesPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-blue-600">
-                    ${Math.round(favorites.reduce((sum, f) => sum + f.price, 0) / favorites.length)}
+                    ${favorites.length > 0 ? Math.round(favorites.reduce((sum, f) => sum + f.price, 0) / favorites.length) : 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Avg. Price</div>
                 </div>
@@ -264,7 +269,7 @@ export default function FavoritesPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-purple-600">
-                    {Math.round(favorites.reduce((sum, f) => sum + f.rating, 0) / favorites.length * 10) / 10}
+                    {favorites.length > 0 ? (Math.round(favorites.reduce((sum, f) => sum + f.rating, 0) / favorites.length * 10) / 10) : 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Avg. Rating</div>
                 </div>
@@ -417,7 +422,7 @@ export default function FavoritesPage() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => handleRemoveFavorite(favorite.id)}
+                          onClick={() => handleRemoveFavorite(favorite.id || '', favorite.listingId)}
                           className="bg-red-600 hover:bg-red-700"
                         >
                           Remove

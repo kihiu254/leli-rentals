@@ -33,10 +33,10 @@ export const favoritesService = {
   // Get user's favorites
   async getUserFavorites(userId: string): Promise<Favorite[]> {
     try {
+      // Use simple query without orderBy to avoid index requirement
       const q = query(
         collection(db, "favorites"),
-        where("userId", "==", userId),
-        orderBy("addedDate", "desc")
+        where("userId", "==", userId)
       )
       
       const snapshot = await getDocs(q)
@@ -52,7 +52,8 @@ export const favoritesService = {
         } as Favorite)
       })
       
-      return favorites
+      // Sort in memory instead of in query
+      return favorites.sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime())
     } catch (error) {
       console.error("Error fetching favorites:", error)
       throw new Error("Failed to fetch favorites")
