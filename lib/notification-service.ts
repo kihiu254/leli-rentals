@@ -48,7 +48,6 @@ export class NotificationService {
       const q = query(
         notificationsRef,
         where('userId', '==', userId),
-        orderBy('createdAt', 'desc'),
         limit(limitCount)
       )
 
@@ -74,7 +73,8 @@ export class NotificationService {
         })
       })
 
-      return notifications
+      // Sort in memory by createdAt descending
+      return notifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     } catch (error) {
       console.error('Error fetching notifications:', error)
       return []
@@ -92,7 +92,6 @@ export class NotificationService {
       const q = query(
         notificationsRef,
         where('userId', '==', userId),
-        orderBy('createdAt', 'desc'),
         limit(limitCount)
       )
 
@@ -112,7 +111,10 @@ export class NotificationService {
             updatedAt: data.updatedAt.toDate()
           })
         })
-        callback(notifications)
+        
+        // Sort in memory by createdAt descending
+        const sortedNotifications = notifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        callback(sortedNotifications)
       })
 
       return unsubscribe
