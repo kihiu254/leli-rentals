@@ -92,5 +92,43 @@ service cloud.firestore {
     match /userSettings/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+    
+    // Saved bookings - users can manage their own saved bookings
+    match /savedBookings/{bookingId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // User interactions (likes, saves, views, shares) - users can manage their own interactions
+    match /user_interactions/{interactionId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // Listing stats - anyone can read, system can write
+    match /listing_stats/{statId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Notifications - users can manage their own notifications
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // Chat sessions - users can manage their own chat sessions
+    match /chatSessions/{sessionId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // Support tickets - users can manage their own tickets, admins can read all
+    match /supportTickets/{ticketId} {
+      allow read: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid);
+      allow write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid);
+    }
   }
 }

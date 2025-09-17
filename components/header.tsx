@@ -46,7 +46,7 @@ export function Header() {
   }
 
   return (
-    <header className="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+    <header className="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-all duration-300 shadow-theme">
       <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6 max-w-7xl">
         <Link href="/" className="flex items-center">
           <Image
@@ -65,25 +65,25 @@ export function Header() {
           </Link>
           <Link
             href="/categories"
-            className="text-gray-700 dark:text-gray-300 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
+            className="text-gray-800 dark:text-gray-200 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
           >
             Categories
           </Link>
           <Link
             href="/get-started"
-            className="text-gray-700 dark:text-gray-300 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
+            className="text-gray-800 dark:text-gray-200 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
           >
             Get Started
           </Link>
           <Link
             href="/about"
-            className="text-gray-700 dark:text-gray-300 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
+            className="text-gray-800 dark:text-gray-200 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
           >
             About
           </Link>
           <Link
             href="/contact"
-            className="text-gray-700 dark:text-gray-300 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
+            className="text-gray-800 dark:text-gray-200 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
           >
             Contact
           </Link>
@@ -93,7 +93,7 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors lg:hidden"
+            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-colors lg:hidden"
             onClick={() => {
               // Toggle mobile search - you can implement a mobile search modal here
               const searchInput = document.querySelector('input[placeholder="Search Rentals"]') as HTMLInputElement
@@ -129,10 +129,10 @@ export function Header() {
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors"
+            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200 btn-animate"
           >
-            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0 text-yellow-500" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100 text-blue-400" />
             <span className="sr-only">Toggle theme</span>
           </Button>
 
@@ -144,7 +144,7 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors"
+                  className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-colors"
                   onClick={() => setIsNotificationPanelOpen(!isNotificationPanelOpen)}
                 >
                   <Bell className="h-4 w-4" />

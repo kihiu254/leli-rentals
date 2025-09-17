@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,17 +10,21 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff, Mail, Lock, User, Chrome } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, User, Chrome, AlertCircle, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { authAPI } from "@/lib/auth"
 import { useRouter } from "next/navigation"
+import { fetchSignInMethodsForEmail } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false)
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'available' | 'taken' | 'invalid'>('idle')
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,6 +34,42 @@ export default function SignupPage() {
   })
   const { toast } = useToast()
   const router = useRouter()
+
+  // Email validation function
+  const checkEmailAvailability = async (email: string) => {
+    if (!email || !email.includes('@')) {
+      setEmailStatus('invalid')
+      return
+    }
+
+    setIsCheckingEmail(true)
+    try {
+      const signInMethods = await fetchSignInMethodsForEmail(auth, email)
+      if (signInMethods.length > 0) {
+        setEmailStatus('taken')
+      } else {
+        setEmailStatus('available')
+      }
+    } catch (error) {
+      console.error('Error checking email:', error)
+      setEmailStatus('invalid')
+    } finally {
+      setIsCheckingEmail(false)
+    }
+  }
+
+  // Debounced email check
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (formData.email && formData.email.includes('@')) {
+        checkEmailAvailability(formData.email)
+      } else {
+        setEmailStatus('idle')
+      }
+    }, 500) // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timeoutId)
+  }, [formData.email])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,6 +88,51 @@ export default function SignupPage() {
       toast({
         title: "Email required",
         description: "Please enter your email address.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (emailStatus === 'taken') {
+      toast({
+        title: "Email already in use",
+        description: "This email is already registered. Please sign in instead or use a different email.",
+        variant: "destructive",
+        action: (
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => router.push('/login')}
+            >
+              Sign In
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => router.push('/forgot-password')}
+            >
+              Reset Password
+            </Button>
+          </div>
+        ),
+      })
+      return
+    }
+
+    if (emailStatus === 'invalid') {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (emailStatus === 'idle' || isCheckingEmail) {
+      toast({
+        title: "Please wait",
+        description: "We're checking if your email is available...",
         variant: "destructive",
       })
       return
@@ -121,20 +206,28 @@ export default function SignupPage() {
       // Redirect to profile page
       router.push('/profile')
     } catch (error: any) {
-      if (error.message?.includes('email already exists')) {
+      if (error.message?.includes('already exists') || error.message?.includes('email-already-in-use')) {
         toast({
           title: "Account already exists",
           description: "An account with this email already exists. Please sign in instead.",
           variant: "destructive",
           action: (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => router.push('/login')}
-              className="ml-2"
-            >
-              Sign In
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => router.push('/login')}
+              >
+                Sign In
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => router.push('/forgot-password')}
+              >
+                Reset Password
+              </Button>
+            </div>
           ),
         })
       } else {
@@ -238,12 +331,51 @@ export default function SignupPage() {
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className="pl-10"
+                      className={`pl-10 pr-10 ${
+                        emailStatus === 'taken' ? 'border-red-500 focus:border-red-500' :
+                        emailStatus === 'available' ? 'border-green-500 focus:border-green-500' :
+                        emailStatus === 'invalid' ? 'border-red-500 focus:border-red-500' :
+                        'border-gray-300'
+                      }`}
                       value={formData.email}
                       onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                       required
                     />
+                    {/* Email status indicator */}
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {isCheckingEmail ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+                      ) : emailStatus === 'taken' ? (
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                      ) : emailStatus === 'available' ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : emailStatus === 'invalid' ? (
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                      ) : null}
+                    </div>
                   </div>
+                  {/* Email status message */}
+                  {emailStatus === 'taken' && (
+                    <div className="flex items-center gap-2 text-sm text-red-600">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>This email is already registered. </span>
+                      <Link href="/login" className="underline hover:no-underline">
+                        Sign in instead
+                      </Link>
+                    </div>
+                  )}
+                  {emailStatus === 'available' && (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Email is available</span>
+                    </div>
+                  )}
+                  {emailStatus === 'invalid' && formData.email && (
+                    <div className="flex items-center gap-2 text-sm text-red-600">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>Please enter a valid email address</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -349,9 +481,12 @@ export default function SignupPage() {
                 <Button 
                   type="submit" 
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
-                  disabled={isLoading || isGoogleLoading}
+                  disabled={isLoading || isGoogleLoading || emailStatus === 'taken' || isCheckingEmail}
                 >
-                  {isLoading ? "Creating account..." : "Create Account"}
+                  {isLoading ? "Creating account..." : 
+                   emailStatus === 'taken' ? "Email already in use" :
+                   isCheckingEmail ? "Checking email..." :
+                   "Create Account"}
                 </Button>
               </form>
 

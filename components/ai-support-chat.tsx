@@ -28,6 +28,7 @@ import {
   Loader2
 } from "lucide-react"
 import { aiSupportService, SupportMessage, AIResponse, ChatSession } from "@/lib/ai-support-service"
+import { simpleAISupportService } from "@/lib/simple-ai-support-service"
 import { useAuthContext } from "@/components/auth-provider"
 
 interface AISupportChatProps {
@@ -133,7 +134,14 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
       // Simulate AI processing time
       await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000))
 
-      const aiResponse: AIResponse = await aiSupportService.generateAIResponse(userMessage, messages)
+      let aiResponse: AIResponse
+      try {
+        aiResponse = await aiSupportService.generateAIResponse(userMessage, messages)
+      } catch (error) {
+        console.error('Firebase error, using fallback:', error)
+        // Fallback to simple service
+        aiResponse = await simpleAISupportService.generateAIResponse(userMessage, messages)
+      }
       
       const aiMessage: SupportMessage = {
         id: `ai-${Date.now()}`,
@@ -152,6 +160,17 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
       setMessages(prev => [...prev, aiMessage])
       setSuggestedActions(aiResponse.suggestedActions)
       setQuickReplies(aiResponse.quickReplies || [])
+
+      // Save AI message to session
+      if (sessionId) {
+        try {
+          await aiSupportService.addMessage(sessionId, aiMessage)
+        } catch (error) {
+          console.error('Firebase error, using fallback:', error)
+          // Fallback to simple service
+          await simpleAISupportService.addMessage(sessionId, aiMessage)
+        }
+      }
 
       // If escalation is needed, add human agent message
       if (aiResponse.shouldEscalate) {
@@ -208,7 +227,13 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
 
     // Save message to session
     if (sessionId) {
-      await aiSupportService.addMessage(sessionId, userMessage)
+      try {
+        await aiSupportService.addMessage(sessionId, userMessage)
+      } catch (error) {
+        console.error('Firebase error, using fallback:', error)
+        // Fallback to simple service
+        await simpleAISupportService.addMessage(sessionId, userMessage)
+      }
     }
 
     // Generate AI response
@@ -254,75 +279,75 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
     return (
       <Button 
         onClick={onToggle} 
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-12 w-12 sm:h-14 sm:w-14 rounded-full shadow-lg z-50 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 animate-pulse transition-all duration-300 hover:scale-110"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-10 w-10 sm:h-12 sm:w-12 rounded-full shadow-lg z-50 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 animate-pulse transition-all duration-300 hover:scale-110"
         size="icon"
         aria-label="Open AI Support Chat"
       >
-        <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
+        <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
       </Button>
     )
   }
 
   return (
-    <Card className="fixed bottom-4 right-4 w-full max-w-sm sm:max-w-md md:w-96 h-[500px] sm:h-[550px] md:h-[600px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300 sm:bottom-6 sm:right-6">
-      <CardHeader className="pb-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+    <Card className="fixed bottom-4 right-4 w-full max-w-xs sm:max-w-sm md:w-80 h-[400px] sm:h-[450px] md:h-[500px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300 sm:bottom-6 sm:right-6">
+      <CardHeader className="pb-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
             <div className="relative flex-shrink-0">
-              <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+              <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
                 <AvatarImage src="/placeholder-user.jpg" alt="Sarah - AI Support" />
                 <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500">
                   <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white animate-pulse" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full border border-white animate-pulse" />
             </div>
             <div className="min-w-0 flex-1">
-              <CardTitle className="text-xs sm:text-sm flex items-center gap-1 sm:gap-2 truncate">
+              <CardTitle className="text-xs flex items-center gap-1 truncate">
                 <span className="truncate">Sarah - AI Support</span>
-                <Sparkles className="h-3 w-3 flex-shrink-0" />
+                <Sparkles className="h-2 w-2 flex-shrink-0" />
               </CardTitle>
-              <div className="flex items-center gap-1 sm:gap-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
-                <span className="text-xs opacity-90 truncate">Online • AI Powered</span>
+              <div className="flex items-center gap-1">
+                <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+                <span className="text-xs opacity-90 truncate">Online • AI</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+          <div className="flex items-center gap-0.5 flex-shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 sm:h-8 sm:w-8 text-white hover:bg-white/20"
+              className="h-6 w-6 sm:h-7 sm:w-7 text-white hover:bg-white/20"
               onClick={() => window.open("tel:+2540112081866", "_self")}
               aria-label="Call Support"
             >
-              <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
+              <Phone className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7 sm:h-8 sm:w-8 text-white hover:bg-white/20 hidden sm:flex"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 sm:h-7 sm:w-7 text-white hover:bg-white/20 hidden sm:flex"
               aria-label="Video Call"
             >
-              <Video className="h-3 w-3 sm:h-4 sm:w-4" />
+              <Video className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7 sm:h-8 sm:w-8 text-white hover:bg-white/20" 
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 sm:h-7 sm:w-7 text-white hover:bg-white/20"
               onClick={() => setIsMinimized(!isMinimized)}
               aria-label={isMinimized ? "Maximize Chat" : "Minimize Chat"}
             >
-              {isMinimized ? <Maximize2 className="h-3 w-3 sm:h-4 sm:w-4" /> : <Minimize2 className="h-3 w-3 sm:h-4 sm:w-4" />}
+              {isMinimized ? <Maximize2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> : <Minimize2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />}
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7 sm:h-8 sm:w-8 text-white hover:bg-white/20" 
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 sm:h-7 sm:w-7 text-white hover:bg-white/20"
               onClick={onToggle}
               aria-label="Close Chat"
             >
-              <X className="h-3 w-3 sm:h-4 sm:w-4" />
+              <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             </Button>
           </div>
         </div>
@@ -491,23 +516,23 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
             <div ref={messagesEndRef} />
           </CardContent>
 
-          <div className="p-3 sm:p-4 border-t bg-white">
-            <div className="flex items-center gap-1 sm:gap-2">
+          <div className="p-2 sm:p-3 border-t bg-white">
+            <div className="flex items-center gap-1">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7 sm:h-8 sm:w-8"
+                className="h-5 w-5 sm:h-6 sm:w-6"
                 onClick={isListening ? stopVoiceInput : startVoiceInput}
               >
                 {isListening ? (
-                  <MicOff className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 animate-pulse" />
+                  <MicOff className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-red-600 animate-pulse" />
                 ) : (
-                  <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <Mic className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 )}
               </Button>
               
-              <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 hidden sm:flex">
-                <Paperclip className="h-3 w-3 sm:h-4 sm:w-4" />
+              <Button variant="ghost" size="icon" className="h-5 w-5 sm:h-6 sm:w-6 hidden sm:flex">
+                <Paperclip className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </Button>
               
               <Input
@@ -515,21 +540,21 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1 text-sm sm:text-base h-8 sm:h-10"
+                className="flex-1 text-xs sm:text-sm h-6 sm:h-8"
                 disabled={isAIResponding}
               />
               
-              <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 hidden sm:flex">
-                <Smile className="h-3 w-3 sm:h-4 sm:w-4" />
+              <Button variant="ghost" size="icon" className="h-5 w-5 sm:h-6 sm:w-6 hidden sm:flex">
+                <Smile className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </Button>
               
               <Button 
                 onClick={sendMessage} 
                 size="icon" 
-                className="h-7 w-7 sm:h-8 sm:w-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="h-5 w-5 sm:h-6 sm:w-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 disabled={!newMessage.trim() || isAIResponding}
               >
-                <Send className="h-3 w-3 sm:h-4 sm:w-4" />
+                <Send className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </Button>
             </div>
             

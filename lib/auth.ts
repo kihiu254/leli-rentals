@@ -73,6 +73,8 @@ export const authAPI = {
         throw new Error('No account found with this email address.')
       } else if (error.code === 'auth/wrong-password') {
         throw new Error('Incorrect password. Please try again.')
+      } else if (error.code === 'auth/invalid-credential') {
+        throw new Error('Invalid email or password. Please check your credentials and try again.')
       } else if (error.code === 'auth/invalid-email') {
         throw new Error('Invalid email address.')
       } else if (error.code === 'auth/too-many-requests') {
@@ -116,11 +118,15 @@ export const authAPI = {
       console.error('Email sign-up error:', error)
       
       if (error.code === 'auth/email-already-in-use') {
-        throw new Error('An account with this email already exists.')
+        throw new Error('An account with this email already exists. Please sign in instead.')
       } else if (error.code === 'auth/invalid-email') {
-        throw new Error('Invalid email address.')
+        throw new Error('Invalid email address. Please enter a valid email.')
       } else if (error.code === 'auth/weak-password') {
-        throw new Error('Password is too weak. Please choose a stronger password.')
+        throw new Error('Password is too weak. Please choose a stronger password with at least 6 characters.')
+      } else if (error.code === 'auth/operation-not-allowed') {
+        throw new Error('Email/password accounts are not enabled. Please contact support.')
+      } else if (error.code === 'auth/too-many-requests') {
+        throw new Error('Too many failed attempts. Please try again later.')
       }
       
       throw new Error(error.message || 'Sign-up failed. Please try again.')

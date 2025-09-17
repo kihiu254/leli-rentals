@@ -8,6 +8,7 @@ import {
   limit,
   doc,
   updateDoc,
+  setDoc,
   serverTimestamp
 } from "firebase/firestore"
 import { db } from "./firebase"
@@ -216,6 +217,32 @@ export const aiSupportService = {
     }
   },
 
+  // Create chat session
+  async createChatSession(sessionId: string, userId?: string): Promise<ChatSession> {
+    try {
+      const newSession: ChatSession = {
+        id: sessionId,
+        userId,
+        messages: [],
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        metadata: {
+          userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
+          referrer: typeof window !== 'undefined' ? document.referrer : undefined,
+          deviceType: typeof window !== 'undefined' ? (window.innerWidth < 768 ? 'mobile' : 'desktop') : 'desktop'
+        }
+      }
+
+      const sessionRef = doc(db, 'chatSessions', sessionId)
+      await setDoc(sessionRef, newSession)
+      return newSession
+    } catch (error) {
+      console.error('Error creating chat session:', error)
+      throw new Error('Failed to create chat session')
+    }
+  },
+
   // Add message to session
   async addMessage(sessionId: string, message: Omit<SupportMessage, 'id' | 'timestamp'>): Promise<void> {
     try {
@@ -225,10 +252,17 @@ export const aiSupportService = {
         timestamp: new Date()
       }
 
+      // Check if session exists, create if it doesn't
+      let session = await this.getChatSession(sessionId)
+      if (!session) {
+        // Create new session
+        session = await this.createChatSession(sessionId, message.sender === 'user' ? 'user' : undefined)
+      }
+
       // Update the session with the new message
       const sessionRef = doc(db, 'chatSessions', sessionId)
       await updateDoc(sessionRef, {
-        messages: [...(await this.getChatSession(sessionId))?.messages || [], newMessage],
+        messages: [...(session?.messages || []), newMessage],
         updatedAt: serverTimestamp()
       })
     } catch (error) {

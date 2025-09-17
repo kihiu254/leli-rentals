@@ -6,13 +6,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, ArrowRight } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 
 export function Footer() {
   const { theme } = useTheme()
   const [email, setEmail] = useState("")
+  const [mounted, setMounted] = useState(false)
   const { toast } = useToast()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSubscribe = () => {
     if (!email.trim()) {
@@ -90,7 +95,7 @@ export function Footer() {
             <div className="lg:col-span-2">
               <Link href="/" className="flex items-center mb-6">
                 <Image
-                  src={theme === "dark" ? "/logo-white.svg" : "/logo-black.svg"}
+                  src={mounted && theme === "dark" ? "/logo-white.svg" : "/logo-black.svg"}
                   alt="Leli Rentals"
                   width={150}
                   height={50}
@@ -160,8 +165,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pricing" className="text-muted-foreground hover:text-primary transition-colors">
-                    Pricing
+                  <Link href="/profile/billing" className="text-muted-foreground hover:text-primary transition-colors">
+                    Pricing & Plans
                   </Link>
                 </li>
                 <li>
@@ -239,7 +244,7 @@ export function Footer() {
                     href="mailto:info@lelirentals.com"
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
-                    info@lelirentals.com
+                    lelirentals@gmail.com
                   </a>
                 </li>
               </ul>

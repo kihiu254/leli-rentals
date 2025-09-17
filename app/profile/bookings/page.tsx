@@ -30,12 +30,16 @@ import {
 import { 
   Search, Calendar, DollarSign, Star, MapPin, Eye, MessageCircle, 
   Clock, CheckCircle, XCircle, AlertCircle, Truck, CreditCard,
-  TrendingUp, Users, Award, Filter, Download, Share2, Phone
+  TrendingUp, Users, Award, Filter, Download, Share2, Phone,
+  Bookmark, Plus, Heart, Tag
 } from "lucide-react"
 import { useAuthContext } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { bookingsService, Booking } from "@/lib/bookings-service"
+import { hybridSavedBookingsService } from "@/lib/hybrid-saved-bookings-service"
+import { SavedBooking } from "@/lib/types/saved-booking"
+import LocationSelector from "@/components/location-selector"
 
 export default function BookingsPage() {
   const { user } = useAuthContext()
@@ -46,7 +50,9 @@ export default function BookingsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [savedBookings, setSavedBookings] = useState<SavedBooking[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingSaved, setIsLoadingSaved] = useState(false)
 
   // Load user bookings
   useEffect(() => {
@@ -69,6 +75,29 @@ export default function BookingsPage() {
       }
     }
     loadBookings()
+  }, [user, toast])
+
+  // Load saved bookings
+  useEffect(() => {
+    const loadSavedBookings = async () => {
+      if (!user) return
+      
+      setIsLoadingSaved(true)
+      try {
+        const userSavedBookings = await hybridSavedBookingsService.getUserSavedBookings(user.id)
+        setSavedBookings(userSavedBookings)
+      } catch (error) {
+        console.error("Error loading saved bookings:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load your saved bookings",
+          variant: "destructive"
+        })
+      } finally {
+        setIsLoadingSaved(false)
+      }
+    }
+    loadSavedBookings()
   }, [user, toast])
   const [isCancellingBooking, setIsCancellingBooking] = useState(false)
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null)
@@ -142,6 +171,31 @@ export default function BookingsPage() {
     }
   }
 
+  const handleRemoveSavedBooking = async (listingId: string) => {
+    if (!user) return
+    
+    try {
+      await hybridSavedBookingsService.removeSavedBooking(user.id, listingId)
+      setSavedBookings(prev => prev.filter(booking => booking.listingId !== listingId))
+      
+      toast({
+        title: "Removed from saved",
+        description: "The listing has been removed from your saved bookings.",
+      })
+    } catch (error) {
+      toast({
+        title: "Error removing saved booking",
+        description: "Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleBookFromSaved = (savedBooking: SavedBooking) => {
+    // Navigate to listings page with the specific listing
+    router.push(`/listings?id=${savedBooking.listingId}`)
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed":
@@ -191,12 +245,12 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-500">
       <Header />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-6 sm:mb-8 fade-in-up">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -218,28 +272,28 @@ export default function BookingsPage() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg card-animate bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 fade-in-up stagger-1">
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
-                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg transition-colors duration-200">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{bookings.length}</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">{bookings.length}</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Total Bookings</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg card-animate bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 fade-in-up stagger-2">
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                <div className="p-1.5 sm:p-2 bg-green-100 dark:bg-green-900/30 rounded-lg transition-colors duration-200">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600 dark:text-green-400">
                     {bookings.filter(b => b.status === "confirmed").length}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Confirmed</div>
@@ -248,14 +302,14 @@ export default function BookingsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg card-animate bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 fade-in-up stagger-3">
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg">
-                  <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                <div className="p-1.5 sm:p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg transition-colors duration-200">
+                  <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-400">
                     ${bookings.reduce((sum, b) => sum + b.totalPrice, 0).toFixed(0)}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Total Spent</div>
@@ -264,14 +318,14 @@ export default function BookingsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg card-animate bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 fade-in-up stagger-4">
             <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-orange-100 rounded-lg">
-                  <Star className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+                <div className="p-1.5 sm:p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg transition-colors duration-200">
+                  <Star className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-400">
                     {bookings.length > 0 ? (Math.round(bookings.reduce((sum, b) => sum + b.ownerRating, 0) / bookings.length * 10) / 10).toFixed(1) : "0.0"}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Avg. Owner Rating</div>
@@ -282,17 +336,17 @@ export default function BookingsPage() {
         </div>
 
         {/* Filters and Search */}
-        <Card className="border-0 shadow-lg mb-4 sm:mb-6">
+        <Card className="border-0 shadow-lg mb-4 sm:mb-6 card-animate bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 fade-in-up stagger-5">
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <div className="relative group">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-blue-500 transition-colors duration-200" />
                   <Input
                     placeholder="Search bookings..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-9 sm:h-10 text-sm sm:text-base"
+                    className="pl-10 h-9 sm:h-10 text-sm sm:text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 focus-enhanced"
                   />
                 </div>
               </div>
@@ -324,21 +378,25 @@ export default function BookingsPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 bg-white shadow-lg border-0 rounded-xl p-1">
-            <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
+          <TabsList className="grid w-full grid-cols-6 bg-white dark:bg-gray-800 shadow-lg border-0 rounded-xl p-1 transition-all duration-300">
+            <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200 btn-animate">
               All Bookings
             </TabsTrigger>
-            <TabsTrigger value="confirmed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="confirmed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200 btn-animate">
               Confirmed
             </TabsTrigger>
-            <TabsTrigger value="pending" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="pending" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200 btn-animate">
               Pending
             </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="completed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200 btn-animate">
               Completed
             </TabsTrigger>
-            <TabsTrigger value="cancelled" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="cancelled" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200 btn-animate">
               Cancelled
+            </TabsTrigger>
+            <TabsTrigger value="saved" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200 btn-animate">
+              <Bookmark className="h-4 w-4 mr-1" />
+              Saved for Later ({savedBookings.length})
             </TabsTrigger>
           </TabsList>
 
@@ -498,6 +556,132 @@ export default function BookingsPage() {
                       Browse Listings
                     </Button>
                   )}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Saved Bookings Tab */}
+          <TabsContent value="saved" className="space-y-6 mt-6">
+            {isLoadingSaved ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-muted-foreground">Loading saved bookings...</p>
+              </div>
+            ) : savedBookings.length > 0 ? (
+              <div className="space-y-4">
+                {savedBookings.map((savedBooking) => (
+                  <Card key={savedBooking.id} className="border-0 shadow-lg">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Listing Image */}
+                        <div className="w-full lg:w-48 h-32 overflow-hidden rounded-lg">
+                          <img
+                            src={savedBooking.listingImage}
+                            alt={savedBooking.listingTitle}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.src = "/placeholder.svg"
+                            }}
+                          />
+                        </div>
+
+                        {/* Saved Booking Details */}
+                        <div className="flex-1">
+                          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                            <div className="space-y-2">
+                              <h3 className="text-xl font-semibold">{savedBooking.listingTitle}</h3>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  {savedBooking.listingLocation}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <DollarSign className="h-4 w-4" />
+                                  KSh {savedBooking.listingPrice.toLocaleString()}/day
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Tag className="h-4 w-4" />
+                                  {savedBooking.listingCategory}
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-4">
+                                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                                  <Bookmark className="h-3 w-3 mr-1" />
+                                  Saved {new Date(savedBooking.savedAt).toLocaleDateString()}
+                                </Badge>
+                              </div>
+
+                              {savedBooking.notes && (
+                                <div className="text-sm text-muted-foreground">
+                                  <strong>Notes:</strong> {savedBooking.notes}
+                                </div>
+                              )}
+
+                              {savedBooking.tags && savedBooking.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {savedBooking.tags.map((tag: string, index: number) => (
+                                    <Badge key={index} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex flex-col gap-2">
+                              <div className="flex gap-2">
+                                <Button 
+                                  onClick={() => handleBookFromSaved(savedBooking)}
+                                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Book Now
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => router.push(`/listings?id=${savedBooking.listingId}`)}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View Details
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleRemoveSavedBooking(savedBooking.listingId)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="border-0 shadow-lg">
+                <CardContent className="p-12 text-center">
+                  <Bookmark className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No saved listings yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Use "Save for Later" on listings to add them here. These are items you're interested in but haven't booked yet.
+                  </p>
+                  <Button 
+                    onClick={() => router.push('/listings')}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Browse Listings
+                  </Button>
                 </CardContent>
               </Card>
             )}

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
   DialogContent,
@@ -32,11 +33,12 @@ import {
 import { 
   CreditCard, Plus, Trash2, Edit, Download, Eye, Calendar, DollarSign, 
   CheckCircle, AlertCircle, Clock, CreditCard as CardIcon, Banknote, 
-  Receipt, TrendingUp, Shield, Zap
+  Receipt, TrendingUp, Shield, Zap, Star, Crown, Users, Check
 } from "lucide-react"
 import { useAuthContext } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import PaymentModal from "@/components/payment-modal"
 
 // Mock payment methods
 const mockPaymentMethods = [
@@ -114,6 +116,90 @@ const mockSubscription = {
   ],
 }
 
+// Pricing plans
+const pricingPlans = [
+  {
+    id: "free",
+    name: "Free",
+    description: "Perfect for getting started",
+    price: {
+      monthly: 0,
+      yearly: 0,
+    },
+    popular: false,
+    features: [
+      "Up to 3 listings",
+      "Basic search and filters",
+      "Standard customer support",
+      "Basic analytics",
+      "Mobile app access",
+      "Secure payments",
+    ],
+    limitations: [
+      "Limited to 3 active listings",
+      "Basic support only",
+      "Standard listing visibility",
+    ],
+    icon: <Users className="h-6 w-6" />,
+    color: "border-gray-200",
+    buttonColor: "bg-gray-600 hover:bg-gray-700",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    description: "Best for active renters",
+    price: {
+      monthly: 2900,
+      yearly: 29000,
+    },
+    popular: true,
+    features: [
+      "Unlimited listings",
+      "Advanced search and filters",
+      "Priority customer support",
+      "Advanced analytics & insights",
+      "Mobile app access",
+      "Secure payments",
+      "Custom branding",
+      "Booking management tools",
+      "Automated messaging",
+      "Performance optimization",
+    ],
+    limitations: [],
+    icon: <Zap className="h-6 w-6" />,
+    color: "border-blue-200",
+    buttonColor: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700",
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    description: "For businesses and agencies",
+    price: {
+      monthly: 9900,
+      yearly: 99000,
+    },
+    popular: false,
+    features: [
+      "Everything in Pro",
+      "White-label solution",
+      "Dedicated account manager",
+      "Custom integrations",
+      "Advanced reporting",
+      "Multi-user accounts",
+      "API access",
+      "Custom domain",
+      "Priority feature requests",
+      "24/7 phone support",
+      "Advanced security features",
+      "Bulk operations",
+    ],
+    limitations: [],
+    icon: <Crown className="h-6 w-6" />,
+    color: "border-purple-200",
+    buttonColor: "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700",
+  },
+]
+
 export default function BillingPage() {
   const { user } = useAuthContext()
   const router = useRouter()
@@ -127,6 +213,9 @@ export default function BillingPage() {
     name: "",
     zipCode: "",
   })
+  const [isYearly, setIsYearly] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<any>(null)
 
   const handleAddPaymentMethod = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -193,6 +282,52 @@ export default function BillingPage() {
         variant: "destructive",
       })
     }
+  }
+
+  const handleSelectPlan = async (planId: string) => {
+    const plan = pricingPlans.find(p => p.id === planId)
+    if (!plan) return
+
+    // If it's a free plan, activate it directly
+    if (plan.price.monthly === 0) {
+      try {
+        // Simulate API call for free plan activation
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        
+        toast({
+          title: "Free plan activated!",
+          description: "Your free subscription has been activated. You can upgrade anytime.",
+        })
+      } catch (error) {
+        toast({
+          title: "Error activating plan",
+          description: "Please try again or contact support.",
+          variant: "destructive",
+        })
+      }
+    } else {
+      // For paid plans, show payment modal
+      setSelectedPlanForPayment({
+        ...plan,
+        price: isYearly ? plan.price.yearly : plan.price.monthly,
+        currency: 'KSh',
+        description: `${plan.description} - ${isYearly ? 'Annual' : 'Monthly'} billing`
+      })
+      setShowPaymentModal(true)
+    }
+  }
+
+  const formatPrice = (price: number, isYearly: boolean) => {
+    if (price === 0) return "Free"
+    const displayPrice = isYearly ? price : Math.round(price / 12)
+    return `KSh ${displayPrice.toLocaleString()}/${isYearly ? 'year' : 'month'}`
+  }
+
+  const calculateSavings = (monthlyPrice: number, yearlyPrice: number) => {
+    const monthlyTotal = monthlyPrice * 12
+    const savings = monthlyTotal - yearlyPrice
+    const percentage = Math.round((savings / monthlyTotal) * 100)
+    return { savings, percentage }
   }
 
   const getStatusColor = (status: string) => {
@@ -296,7 +431,7 @@ export default function BillingPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 bg-white shadow-lg border-0 rounded-xl p-1">
+          <TabsList className="grid w-full grid-cols-4 bg-white shadow-lg border-0 rounded-xl p-1">
             <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
               <TrendingUp className="h-4 w-4 mr-2" />
               Overview
@@ -308,6 +443,10 @@ export default function BillingPage() {
             <TabsTrigger value="transactions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
               <Receipt className="h-4 w-4 mr-2" />
               Transactions
+            </TabsTrigger>
+            <TabsTrigger value="pricing" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
+              <Star className="h-4 w-4 mr-2" />
+              Plans & Pricing
             </TabsTrigger>
           </TabsList>
 
@@ -590,7 +729,180 @@ export default function BillingPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Pricing Tab */}
+          <TabsContent value="pricing" className="space-y-6 mt-6">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                Choose Your Plan
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Upgrade or downgrade your plan anytime. All plans include secure payments and customer support.
+              </p>
+
+              {/* Billing Toggle */}
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <span className={`text-sm font-medium ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  Monthly
+                </span>
+                <Switch
+                  checked={isYearly}
+                  onCheckedChange={setIsYearly}
+                />
+                <span className={`text-sm font-medium ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  Yearly
+                </span>
+                {isYearly && (
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    Save up to 17%
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Pricing Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {pricingPlans.map((plan) => {
+                const savings = calculateSavings(plan.price.monthly, plan.price.yearly)
+                
+                return (
+                  <Card 
+                    key={plan.id} 
+                    className={`border-2 ${plan.popular ? 'border-blue-500 shadow-xl scale-105' : plan.color} shadow-lg relative`}
+                  >
+                    {plan.popular && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1">
+                          <Star className="h-3 w-3 mr-1" />
+                          Most Popular
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    <CardHeader className="text-center pb-4">
+                      <div className={`p-3 rounded-full w-fit mx-auto mb-4 ${
+                        plan.id === 'free' ? 'bg-gray-100' : 
+                        plan.id === 'pro' ? 'bg-blue-100' : 'bg-purple-100'
+                      }`}>
+                        <div className={`${
+                          plan.id === 'free' ? 'text-gray-600' : 
+                          plan.id === 'pro' ? 'text-blue-600' : 'text-purple-600'
+                        }`}>
+                          {plan.icon}
+                        </div>
+                      </div>
+                      <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                      <CardDescription className="text-base">{plan.description}</CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="text-center">
+                      <div className="mb-6">
+                        <div className="text-4xl font-bold mb-2">
+                          {formatPrice(plan.price.monthly, isYearly)}
+                        </div>
+                        {isYearly && plan.price.yearly > 0 && (
+                          <div className="text-sm text-green-600">
+                            Save KSh {savings.savings.toLocaleString()}/year ({savings.percentage}% off)
+                          </div>
+                        )}
+                        {plan.price.monthly > 0 && (
+                          <div className="text-sm text-muted-foreground">
+                            {isYearly ? 'Billed annually' : 'Billed monthly'}
+                          </div>
+                        )}
+                      </div>
+
+                      <Button 
+                        className={`w-full mb-6 ${plan.buttonColor} text-white`}
+                        onClick={() => handleSelectPlan(plan.id)}
+                      >
+                        {plan.price.monthly === 0 ? 'Get Started Free' : 'Choose Plan'}
+                      </Button>
+
+                      <div className="space-y-3">
+                        {plan.features.map((feature, index) => (
+                          <div key={index} className="flex items-center gap-2 text-sm">
+                            <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {plan.limitations.length > 0 && (
+                        <div className="mt-6 pt-4 border-t">
+                          <div className="text-sm text-muted-foreground mb-2">Limitations:</div>
+                          <div className="space-y-1">
+                            {plan.limitations.map((limitation, index) => (
+                              <div key={index} className="text-xs text-muted-foreground">
+                                • {limitation}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+
+            {/* FAQ Section */}
+            <div className="mt-12">
+              <h3 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <h4 className="font-semibold mb-2">Can I change plans anytime?</h4>
+                    <p className="text-muted-foreground text-sm">
+                      Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any billing differences.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <h4 className="font-semibold mb-2">What payment methods do you accept?</h4>
+                    <p className="text-muted-foreground text-sm">
+                      We accept M-Pesa, Airtel Money, all major credit/debit cards, and bank transfers. All payments are processed securely with real-time confirmation.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <h4 className="font-semibold mb-2">Is there a free trial?</h4>
+                    <p className="text-muted-foreground text-sm">
+                      Our Free plan is always free with no time limits. For Pro and Enterprise plans, we offer a 14-day free trial with full access to all features.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-lg">
+                  <CardContent className="p-6">
+                    <h4 className="font-semibold mb-2">What happens if I exceed my plan limits?</h4>
+                    <p className="text-muted-foreground text-sm">
+                      We'll notify you when you're approaching your limits. You can upgrade your plan or purchase additional capacity as needed.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
+
+        {/* Payment Modal */}
+        {selectedPlanForPayment && (
+          <PaymentModal
+            isOpen={showPaymentModal}
+            onClose={() => {
+              setShowPaymentModal(false)
+              setSelectedPlanForPayment(null)
+            }}
+            plan={selectedPlanForPayment}
+          />
+        )}
       </div>
     </div>
   )

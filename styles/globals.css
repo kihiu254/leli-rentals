@@ -177,6 +177,37 @@
 }
 
 /* Hero background */
+section.hero-background {
+  background-color: #1e40af !important; /* Fallback blue background */
+  background-image: url('/luxury-cars-in-modern-showroom.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+/* Ensure the background image loads properly */
 .hero-background {
-  background-image: url('/modern-rental-marketplace-hero-with-cars--apartmen.jpg');
+  background-color: #1e40af !important;
+  background-image: url('/luxury-cars-in-modern-showroom.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Get Started section buttons */
+.get-started-button {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.get-started-button:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }

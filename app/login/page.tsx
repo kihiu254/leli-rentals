@@ -48,11 +48,58 @@ export default function LoginPage() {
       // Redirect to profile page
       router.push('/profile')
     } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.message || "Please check your credentials and try again.",
-        variant: "destructive",
-      })
+      if (error.message?.includes('Invalid email or password') || error.message?.includes('invalid-credential')) {
+        toast({
+          title: "Invalid credentials",
+          description: "The email or password you entered is incorrect. Please check your credentials and try again.",
+          variant: "destructive",
+          action: (
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => router.push('/forgot-password')}
+              >
+                Reset Password
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => router.push('/signup')}
+              >
+                Create Account
+              </Button>
+            </div>
+          ),
+        })
+      } else if (error.message?.includes('No account found')) {
+        toast({
+          title: "Account not found",
+          description: "No account found with this email address. Please check your email or create a new account.",
+          variant: "destructive",
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => router.push('/signup')}
+            >
+              Create Account
+            </Button>
+          ),
+        })
+      } else if (error.message?.includes('Too many failed attempts')) {
+        toast({
+          title: "Too many attempts",
+          description: "Too many failed login attempts. Please wait a few minutes before trying again.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Login failed",
+          description: error.message || "Please check your credentials and try again.",
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsLoading(false)
     }

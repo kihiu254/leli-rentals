@@ -90,12 +90,18 @@ export const bookingsService = {
             start: data.dates.start.toDate(),
             end: data.dates.end.toDate(),
             duration: data.dates.duration
-          }
+          },
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || doc.id),
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt || doc.id)
         } as Booking)
       })
       
       // Sort in memory by creation date (newest first)
-      return bookings.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      return bookings.sort((a, b) => {
+        const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt || 0).getTime()
+        const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt || 0).getTime()
+        return bTime - aTime
+      })
     } catch (error) {
       console.error("Error fetching bookings:", error)
       throw new Error("Failed to fetch bookings")
@@ -121,7 +127,9 @@ export const bookingsService = {
             start: data.dates.start.toDate(),
             end: data.dates.end.toDate(),
             duration: data.dates.duration
-          }
+          },
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || docSnap.id),
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt || docSnap.id)
         } as Booking
       }
       return null
@@ -156,8 +164,8 @@ export const bookingsService = {
           end: Timestamp.fromDate(booking.dates.end),
           duration: booking.dates.duration
         },
-        createdAt: now,
-        updatedAt: now
+        createdAt: Timestamp.fromDate(now),
+        updatedAt: Timestamp.fromDate(now)
       }
       
       const docRef = await addDoc(collection(db, "bookings"), bookingData)
@@ -178,7 +186,7 @@ export const bookingsService = {
       const docRef = doc(db, "bookings", id)
       const updateData: any = {
         ...updates,
-        updatedAt: new Date()
+        updatedAt: Timestamp.fromDate(new Date())
       }
       
       // Handle dates conversion if provided
