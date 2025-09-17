@@ -1,0 +1,30 @@
+{
+  "pages": {
+    "/listings/[category]/page": [
+      "static/chunks/[root-of-the-server]__7c2eabac._.css",
+      "static/chunks/_d405902a._.js",
+      "static/chunks/c2b95_next_e20f2128._.js",
+      "static/chunks/76524_@firebase_auth_dist_esm_15ee2761._.js",
+      "static/chunks/1c14c_@firebase_firestore_dist_index_esm_b8452df4.js",
+      "static/chunks/dda2e_@firebase_storage_dist_index_esm_9bdc2f19.js",
+      "static/chunks/node_modules__pnpm_5537900b._.js",
+      "static/chunks/app_layout_tsx_586ce08f._.js",
+      "static/chunks/c2b95_next_dist_client_components_builtin_global-error_2bdba64a.js",
+      "static/chunks/_e4d58817._.js",
+      "static/chunks/c2b95_next_3df7070b._.js",
+      "static/chunks/50d1e_date-fns_8a8740ec._.js",
+      "static/chunks/192a4_react-day-picker_dist_esm_40ddf7f0._.js",
+      "static/chunks/node_modules__pnpm_625ecff7._.js",
+      "static/chunks/app_listings_[category]_page_tsx_2bdba64a._.js",
+      "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_54b5d246._.js",
+      "static/chunks/c2b95_next_dist_compiled_react-dom_57177ea4._.js",
+      "static/chunks/c2b95_next_dist_compiled_next-devtools_index_5138023c.js",
+      "static/chunks/c2b95_next_dist_compiled_68ed5fbd._.js",
+      "static/chunks/c2b95_next_dist_client_974695e0._.js",
+      "static/chunks/c2b95_next_dist_a9b1234c._.js",
+      "static/chunks/69652_@swc_helpers_cjs_77b72907._.js",
+      "static/chunks/_a0ff3932._.js",
+      "static/chunks/turbopack-_189f6ed7._.js"
+    ]
+  }
+}

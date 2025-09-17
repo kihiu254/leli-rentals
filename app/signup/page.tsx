@@ -13,11 +13,14 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Mail, Lock, User, Chrome } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+import { authAPI } from "@/lib/auth"
+import { useRouter } from "next/navigation"
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -26,9 +29,38 @@ export default function SignupPage() {
     agreeToTerms: false,
   })
   const { toast } = useToast()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Basic validation
+    if (!formData.name.trim()) {
+      toast({
+        title: "Name required",
+        description: "Please enter your full name.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!formData.email.trim()) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!formData.password) {
+      toast({
+        title: "Password required",
+        description: "Please enter a password.",
+        variant: "destructive",
+      })
+      return
+    }
 
     if (formData.password !== formData.confirmPassword) {
       toast({
@@ -48,10 +80,25 @@ export default function SignupPage() {
       return
     }
 
-    if (formData.password.length < 6) {
+    // Enhanced password validation
+    const passwordErrors = []
+    if (formData.password.length < 8) {
+      passwordErrors.push("At least 8 characters")
+    }
+    if (!/[A-Z]/.test(formData.password)) {
+      passwordErrors.push("At least one uppercase letter")
+    }
+    if (!/[0-9]/.test(formData.password)) {
+      passwordErrors.push("At least one number")
+    }
+    if (!/[a-z]/.test(formData.password)) {
+      passwordErrors.push("At least one lowercase letter")
+    }
+
+    if (passwordErrors.length > 0) {
       toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
+        title: "Password requirements not met",
+        description: `Password must have: ${passwordErrors.join(", ")}.`,
         variant: "destructive",
       })
       return
@@ -60,35 +107,71 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await authAPI.signUp({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      })
 
       toast({
         title: "Account created successfully!",
-        description: "Welcome to Leli Rentals. Please check your email to verify your account.",
+        description: "Welcome to Leli Rentals! Please check your email to verify your account.",
       })
 
-      // In a real app, redirect to verification page or dashboard
-      // window.location.href = '/verify-email'
-    } catch (error) {
-      toast({
-        title: "Signup failed",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      })
+      // Redirect to profile page
+      router.push('/profile')
+    } catch (error: any) {
+      if (error.message?.includes('email already exists')) {
+        toast({
+          title: "Account already exists",
+          description: "An account with this email already exists. Please sign in instead.",
+          variant: "destructive",
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => router.push('/login')}
+              className="ml-2"
+            >
+              Sign In
+            </Button>
+          ),
+        })
+      } else {
+        toast({
+          title: "Signup failed",
+          description: error.message || "Something went wrong. Please try again.",
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleSocialSignup = (provider: string) => {
-    toast({
-      title: `Connecting to ${provider}`,
-      description: "Redirecting to authentication...",
-    })
+  const handleSocialSignup = async (provider: string) => {
+    if (provider === 'google') {
+      setIsGoogleLoading(true)
+      try {
+        await authAPI.signInWithGoogle()
+        
+        toast({
+          title: "Account created successfully!",
+          description: "Welcome to Leli Rentals. Your account has been created.",
+        })
 
-    // In a real app, this would redirect to OAuth provider
-    console.log(`Signup with ${provider}`)
+        // Redirect to profile page
+        router.push('/profile')
+      } catch (error: any) {
+        toast({
+          title: "Google signup failed",
+          description: error.message || "Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsGoogleLoading(false)
+      }
+    }
   }
 
   return (
@@ -112,9 +195,10 @@ export default function SignupPage() {
                   variant="outline"
                   className="w-full bg-transparent"
                   onClick={() => handleSocialSignup("google")}
+                  disabled={isGoogleLoading || isLoading}
                 >
                   <Chrome className="mr-2 h-4 w-4" />
-                  Continue with Google
+                  {isGoogleLoading ? "Creating account..." : "Continue with Google"}
                 </Button>
                 {/* GitHub signup removed */}
               </div>
@@ -124,7 +208,7 @@ export default function SignupPage() {
                   <Separator className="w-full" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+                  <span className="bg-background px-2 text-muted-foreground font-medium">Or continue with email</span>
                 </div>
               </div>
 
@@ -189,6 +273,28 @@ export default function SignupPage() {
                       )}
                     </Button>
                   </div>
+                  
+                  {/* Password Requirements */}
+                  {formData.password && (
+                    <div className="text-xs space-y-1 mt-2">
+                      <div className={`flex items-center gap-1 ${formData.password.length >= 8 ? 'text-green-600' : 'text-gray-400'}`}>
+                        <div className={`w-1 h-1 rounded-full ${formData.password.length >= 8 ? 'bg-green-600' : 'bg-gray-400'}`}></div>
+                        At least 8 characters
+                      </div>
+                      <div className={`flex items-center gap-1 ${/[A-Z]/.test(formData.password) ? 'text-green-600' : 'text-gray-400'}`}>
+                        <div className={`w-1 h-1 rounded-full ${/[A-Z]/.test(formData.password) ? 'bg-green-600' : 'bg-gray-400'}`}></div>
+                        One uppercase letter
+                      </div>
+                      <div className={`flex items-center gap-1 ${/[a-z]/.test(formData.password) ? 'text-green-600' : 'text-gray-400'}`}>
+                        <div className={`w-1 h-1 rounded-full ${/[a-z]/.test(formData.password) ? 'bg-green-600' : 'bg-gray-400'}`}></div>
+                        One lowercase letter
+                      </div>
+                      <div className={`flex items-center gap-1 ${/[0-9]/.test(formData.password) ? 'text-green-600' : 'text-gray-400'}`}>
+                        <div className={`w-1 h-1 rounded-full ${/[0-9]/.test(formData.password) ? 'bg-green-600' : 'bg-gray-400'}`}></div>
+                        One number
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -240,7 +346,11 @@ export default function SignupPage() {
                   </Label>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+                  disabled={isLoading || isGoogleLoading}
+                >
                   {isLoading ? "Creating account..." : "Create Account"}
                 </Button>
               </form>

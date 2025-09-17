@@ -1,347 +1,416 @@
+"use client"
+
+import type React from "react"
+import { useState } from "react"
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check, X, Star, Zap, Crown, Building2, ArrowRight, Shield, Headphones, TrendingUp } from "lucide-react"
-import Link from "next/link"
+import { Switch } from "@/components/ui/switch"
+import { 
+  Check, Star, Zap, Crown, Users, Shield, TrendingUp, 
+  Award, Clock, MessageCircle, BarChart3, Palette, 
+  Globe, Smartphone, CreditCard, Truck, Headphones
+} from "lucide-react"
+import { useAuthContext } from "@/components/auth-provider"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+
+const pricingPlans = [
+  {
+    id: "free",
+    name: "Free",
+    description: "Perfect for getting started",
+    price: {
+      monthly: 0,
+      yearly: 0,
+    },
+    popular: false,
+    features: [
+      "Up to 3 listings",
+      "Basic search and filters",
+      "Standard customer support",
+      "Basic analytics",
+      "Mobile app access",
+      "Secure payments",
+    ],
+    limitations: [
+      "Limited to 3 active listings",
+      "Basic support only",
+      "Standard listing visibility",
+    ],
+    icon: <Users className="h-6 w-6" />,
+    color: "border-gray-200",
+    buttonColor: "bg-gray-600 hover:bg-gray-700",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    description: "Best for active renters",
+    price: {
+      monthly: 29,
+      yearly: 290,
+    },
+    popular: true,
+    features: [
+      "Unlimited listings",
+      "Advanced search and filters",
+      "Priority customer support",
+      "Advanced analytics & insights",
+      "Mobile app access",
+      "Secure payments",
+      "Custom branding",
+      "Booking management tools",
+      "Automated messaging",
+      "Performance optimization",
+    ],
+    limitations: [],
+    icon: <Zap className="h-6 w-6" />,
+    color: "border-blue-200",
+    buttonColor: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700",
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    description: "For businesses and agencies",
+    price: {
+      monthly: 99,
+      yearly: 990,
+    },
+    popular: false,
+    features: [
+      "Everything in Pro",
+      "White-label solution",
+      "Dedicated account manager",
+      "Custom integrations",
+      "Advanced reporting",
+      "Multi-user accounts",
+      "API access",
+      "Custom domain",
+      "Priority feature requests",
+      "24/7 phone support",
+      "Advanced security features",
+      "Bulk operations",
+    ],
+    limitations: [],
+    icon: <Crown className="h-6 w-6" />,
+    color: "border-purple-200",
+    buttonColor: "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700",
+  },
+]
+
+const features = [
+  {
+    category: "Listing Management",
+    items: [
+      { name: "Number of listings", free: "3", pro: "Unlimited", enterprise: "Unlimited" },
+      { name: "Photo uploads per listing", free: "5", pro: "20", enterprise: "50" },
+      { name: "Video uploads", free: "❌", pro: "✅", enterprise: "✅" },
+      { name: "Custom branding", free: "❌", pro: "✅", enterprise: "✅" },
+    ],
+  },
+  {
+    category: "Analytics & Insights",
+    items: [
+      { name: "Basic analytics", free: "✅", pro: "✅", enterprise: "✅" },
+      { name: "Advanced insights", free: "❌", pro: "✅", enterprise: "✅" },
+      { name: "Revenue tracking", free: "❌", pro: "✅", enterprise: "✅" },
+      { name: "Custom reports", free: "❌", pro: "❌", enterprise: "✅" },
+    ],
+  },
+  {
+    category: "Support & Features",
+    items: [
+      { name: "Email support", free: "✅", pro: "✅", enterprise: "✅" },
+      { name: "Priority support", free: "❌", pro: "✅", enterprise: "✅" },
+      { name: "Phone support", free: "❌", pro: "❌", enterprise: "✅" },
+      { name: "Dedicated manager", free: "❌", pro: "❌", enterprise: "✅" },
+    ],
+  },
+]
 
 export default function PricingPage() {
-  const plans = [
-    {
-      name: "Starter",
-      price: "Free",
-      period: "Forever",
-      description: "Perfect for occasional renters",
-      icon: Star,
-      popular: false,
-      features: [
-        { name: "Browse all listings", included: true },
-        { name: "Basic search filters", included: true },
-        { name: "Contact property owners", included: true },
-        { name: "Up to 3 bookings per month", included: true },
-        { name: "Email support", included: true },
-        { name: "Advanced filters", included: false },
-        { name: "Priority booking", included: false },
-        { name: "24/7 phone support", included: false },
-        { name: "Booking protection", included: false },
-        { name: "Host dashboard", included: false },
-      ],
-      cta: "Get Started Free",
-      href: "/signup",
-    },
-    {
-      name: "Pro",
-      price: "$19",
-      period: "per month",
-      description: "For frequent renters and casual hosts",
-      icon: Zap,
-      popular: true,
-      features: [
-        { name: "Browse all listings", included: true },
-        { name: "Basic search filters", included: true },
-        { name: "Contact property owners", included: true },
-        { name: "Unlimited bookings", included: true },
-        { name: "Email support", included: true },
-        { name: "Advanced filters", included: true },
-        { name: "Priority booking", included: true },
-        { name: "24/7 phone support", included: true },
-        { name: "Booking protection", included: true },
-        { name: "Host dashboard", included: false },
-      ],
-      cta: "Start Pro Trial",
-      href: "/signup?plan=pro",
-    },
-    {
-      name: "Business",
-      price: "$49",
-      period: "per month",
-      description: "For professional hosts and property managers",
-      icon: Crown,
-      popular: false,
-      features: [
-        { name: "Browse all listings", included: true },
-        { name: "Basic search filters", included: true },
-        { name: "Contact property owners", included: true },
-        { name: "Unlimited bookings", included: true },
-        { name: "Email support", included: true },
-        { name: "Advanced filters", included: true },
-        { name: "Priority booking", included: true },
-        { name: "24/7 phone support", included: true },
-        { name: "Booking protection", included: true },
-        { name: "Host dashboard", included: true },
-      ],
-      cta: "Start Business Trial",
-      href: "/signup?plan=business",
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      period: "Contact us",
-      description: "For large organizations and property management companies",
-      icon: Building2,
-      popular: false,
-      features: [
-        { name: "Browse all listings", included: true },
-        { name: "Basic search filters", included: true },
-        { name: "Contact property owners", included: true },
-        { name: "Unlimited bookings", included: true },
-        { name: "Email support", included: true },
-        { name: "Advanced filters", included: true },
-        { name: "Priority booking", included: true },
-        { name: "24/7 phone support", included: true },
-        { name: "Booking protection", included: true },
-        { name: "Host dashboard", included: true },
-      ],
-      cta: "Contact Sales",
-      href: "/contact?subject=enterprise",
-    },
-  ]
+  const { user } = useAuthContext()
+  const router = useRouter()
+  const { toast } = useToast()
+  
+  const [isYearly, setIsYearly] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
 
-  const faqs = [
-    {
-      question: "Can I change my plan at any time?",
-      answer:
-        "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any charges or credits.",
-    },
-    {
-      question: "Is there a free trial available?",
-      answer: "Yes! Pro and Business plans come with a 14-day free trial. No credit card required to start your trial.",
-    },
-    {
-      question: "What payment methods do you accept?",
-      answer:
-        "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and bank transfers for Enterprise plans.",
-    },
-    {
-      question: "Do you offer refunds?",
-      answer:
-        "Yes, we offer a 30-day money-back guarantee for all paid plans. If you're not satisfied, we'll refund your payment in full.",
-    },
-    {
-      question: "How does booking protection work?",
-      answer:
-        "Our booking protection covers you against property damage, cancellations, and other issues. Claims are processed within 24-48 hours.",
-    },
-    {
-      question: "Can I cancel my subscription anytime?",
-      answer:
-        "Absolutely. You can cancel your subscription at any time from your account settings. Your plan will remain active until the end of your billing period.",
-    },
-  ]
+  const handleSelectPlan = async (planId: string) => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to select a plan.",
+        variant: "destructive",
+      })
+      router.push('/login')
+      return
+    }
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      toast({
+        title: "Plan selected successfully!",
+        description: "Your subscription has been activated. You can manage it in your profile settings.",
+      })
+      
+      setSelectedPlan(planId)
+      router.push('/profile/billing')
+    } catch (error) {
+      toast({
+        title: "Error selecting plan",
+        description: "Please try again or contact support.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const formatPrice = (price: number, isYearly: boolean) => {
+    if (price === 0) return "Free"
+    const displayPrice = isYearly ? price : Math.round(price / 12)
+    return `$${displayPrice}/${isYearly ? 'year' : 'month'}`
+  }
+
+  const calculateSavings = (monthlyPrice: number, yearlyPrice: number) => {
+    const monthlyTotal = monthlyPrice * 12
+    const savings = monthlyTotal - yearlyPrice
+    const percentage = Math.round((savings / monthlyTotal) * 100)
+    return { savings, percentage }
+  }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
 
-      {/* Hero Section */}
-      <section className="py-24 bg-gradient-to-br from-primary/5 via-background to-muted/20">
-        <div className="container mx-auto px-6 max-w-7xl text-center">
-          <div className="max-w-4xl mx-auto">
-            <Badge className="mb-6 px-4 py-2 bg-primary/10 text-primary border-primary/20">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Transparent Pricing
-            </Badge>
-            <h1 className="text-6xl md:text-7xl font-bold text-foreground mb-8 text-balance">
-              Choose Your Perfect
-              <span className="text-primary bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                {" "}
-                Plan
-              </span>
-            </h1>
-            <p className="text-2xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto">
-              From casual renters to professional hosts, we have a plan that fits your needs. Start free and upgrade as
-              you grow.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold rounded-xl"
-              >
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button size="lg" variant="outline" className="px-8 py-4 text-lg font-semibold rounded-xl bg-transparent">
-                Compare Plans
-              </Button>
-            </div>
+      <div className="container mx-auto px-4 py-16">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            Choose Your Plan
+          </h1>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Start free and upgrade as you grow. All plans include secure payments, mobile access, and customer support.
+          </p>
+
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <span className={`text-sm font-medium ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+              Monthly
+            </span>
+            <Switch
+              checked={isYearly}
+              onCheckedChange={setIsYearly}
+            />
+            <span className={`text-sm font-medium ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+              Yearly
+            </span>
+            {isYearly && (
+              <Badge className="bg-green-100 text-green-800 border-green-200">
+                Save up to 17%
+              </Badge>
+            )}
           </div>
         </div>
-      </section>
 
-      {/* Pricing Cards */}
-      <section className="py-24">
-        <div className="container mx-auto px-6 max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {plans.map((plan, index) => {
-              const IconComponent = plan.icon
-              return (
-                <Card
-                  key={index}
-                  className={`relative border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${
-                    plan.popular
-                      ? "border-primary bg-gradient-to-br from-primary/5 to-background scale-105"
-                      : "border-border bg-card hover:border-primary/50"
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-primary text-primary-foreground px-4 py-1 font-semibold">Most Popular</Badge>
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {pricingPlans.map((plan) => {
+            const savings = calculateSavings(plan.price.monthly, plan.price.yearly)
+            
+            return (
+              <Card 
+                key={plan.id} 
+                className={`border-2 ${plan.popular ? 'border-blue-500 shadow-xl scale-105' : plan.color} shadow-lg relative`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1">
+                      <Star className="h-3 w-3 mr-1" />
+                      Most Popular
+                    </Badge>
+                  </div>
+                )}
+                
+                <CardHeader className="text-center pb-4">
+                  <div className={`p-3 rounded-full w-fit mx-auto mb-4 ${
+                    plan.id === 'free' ? 'bg-gray-100' : 
+                    plan.id === 'pro' ? 'bg-blue-100' : 'bg-purple-100'
+                  }`}>
+                    <div className={`${
+                      plan.id === 'free' ? 'text-gray-600' : 
+                      plan.id === 'pro' ? 'text-blue-600' : 'text-purple-600'
+                    }`}>
+                      {plan.icon}
+                    </div>
+                  </div>
+                  <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                  <CardDescription className="text-base">{plan.description}</CardDescription>
+                </CardHeader>
+
+                <CardContent className="text-center">
+                  <div className="mb-6">
+                    <div className="text-4xl font-bold mb-2">
+                      {formatPrice(plan.price.monthly, isYearly)}
+                    </div>
+                    {isYearly && plan.price.yearly > 0 && (
+                      <div className="text-sm text-green-600">
+                        Save ${savings.savings}/year ({savings.percentage}% off)
+                      </div>
+                    )}
+                    {plan.price.monthly > 0 && (
+                      <div className="text-sm text-muted-foreground">
+                        {isYearly ? 'Billed annually' : 'Billed monthly'}
+                      </div>
+                    )}
+                  </div>
+
+                  <Button 
+                    className={`w-full mb-6 ${plan.buttonColor} text-white`}
+                    onClick={() => handleSelectPlan(plan.id)}
+                  >
+                    {plan.price.monthly === 0 ? 'Get Started Free' : 'Choose Plan'}
+                  </Button>
+
+                  <div className="space-y-3">
+                    {plan.features.map((feature, index) => (
+                      <div key={index} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {plan.limitations.length > 0 && (
+                    <div className="mt-6 pt-4 border-t">
+                      <div className="text-sm text-muted-foreground mb-2">Limitations:</div>
+                      <div className="space-y-1">
+                        {plan.limitations.map((limitation, index) => (
+                          <div key={index} className="text-xs text-muted-foreground">
+                            • {limitation}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
-
-                  <CardHeader className="text-center pb-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <IconComponent className="h-8 w-8 text-primary" />
-                    </div>
-                    <CardTitle className="text-2xl font-bold text-card-foreground">{plan.name}</CardTitle>
-                    <div className="mt-4">
-                      <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                      {plan.price !== "Free" && plan.price !== "Custom" && (
-                        <span className="text-muted-foreground ml-1">/{plan.period.split(" ")[1]}</span>
-                      )}
-                      <p className="text-sm text-muted-foreground mt-1">{plan.period}</p>
-                    </div>
-                    <p className="text-muted-foreground mt-4">{plan.description}</p>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center space-x-3">
-                          {feature.included ? (
-                            <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                          ) : (
-                            <X className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                          )}
-                          <span className={`text-sm ${feature.included ? "text-foreground" : "text-muted-foreground"}`}>
-                            {feature.name}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className="pt-6">
-                      <Button
-                        asChild
-                        className={`w-full py-3 font-semibold rounded-xl transition-all ${
-                          plan.popular
-                            ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                            : "bg-muted hover:bg-muted/80 text-foreground hover:bg-primary hover:text-primary-foreground"
-                        }`}
-                      >
-                        <Link href={plan.href}>{plan.cta}</Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
-      </section>
 
-      {/* Features Comparison */}
-      <section className="py-24 bg-muted/30">
-        <div className="container mx-auto px-6 max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">Why Choose Leli Rentals?</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our platform offers industry-leading features to make your rental experience seamless and secure.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-border bg-card hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Shield className="h-8 w-8 text-green-500" />
-                </div>
-                <h3 className="text-xl font-bold text-card-foreground mb-4">Secure Payments</h3>
-                <p className="text-muted-foreground">
-                  All transactions are protected with bank-level encryption and fraud detection.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border bg-card hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Headphones className="h-8 w-8 text-blue-500" />
-                </div>
-                <h3 className="text-xl font-bold text-card-foreground mb-4">24/7 Support</h3>
-                <p className="text-muted-foreground">
-                  Our dedicated support team is available around the clock to help you.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border bg-card hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <TrendingUp className="h-8 w-8 text-purple-500" />
-                </div>
-                <h3 className="text-xl font-bold text-card-foreground mb-4">Smart Analytics</h3>
-                <p className="text-muted-foreground">
-                  Get insights into your rental performance with detailed analytics and reporting.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-6 max-w-4xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
-            <p className="text-xl text-muted-foreground">
-              Got questions? We've got answers. If you can't find what you're looking for, contact our support team.
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {faqs.map((faq, index) => (
-              <Card key={index} className="border-border bg-card">
-                <CardContent className="p-8">
-                  <h3 className="text-xl font-bold text-card-foreground mb-4">{faq.question}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
+        {/* Feature Comparison */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center mb-8">Compare Features</h2>
+          
+          <div className="space-y-8">
+            {features.map((category, categoryIndex) => (
+              <Card key={categoryIndex} className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-xl">{category.category}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-4 font-medium">Feature</th>
+                          <th className="text-center py-3 px-4 font-medium">Free</th>
+                          <th className="text-center py-3 px-4 font-medium">Pro</th>
+                          <th className="text-center py-3 px-4 font-medium">Enterprise</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {category.items.map((item, itemIndex) => (
+                          <tr key={itemIndex} className="border-b last:border-b-0">
+                            <td className="py-3 px-4 font-medium">{item.name}</td>
+                            <td className="py-3 px-4 text-center">{item.free}</td>
+                            <td className="py-3 px-4 text-center">{item.pro}</td>
+                            <td className="py-3 px-4 text-center">{item.enterprise}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-r from-primary/10 via-primary/5 to-background">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
-          <h2 className="text-4xl font-bold text-foreground mb-6">Ready to Get Started?</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of satisfied users who trust Leli Rentals for all their rental needs.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold rounded-xl"
-            >
-              Start Your Free Trial
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              asChild
-              className="px-8 py-4 text-lg font-semibold rounded-xl bg-transparent"
-            >
-              <Link href="/contact">Contact Sales</Link>
-            </Button>
+        {/* FAQ Section */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-2">Can I change plans anytime?</h3>
+                <p className="text-muted-foreground text-sm">
+                  Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any billing differences.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
+                <p className="text-muted-foreground text-sm">
+                  We accept all major credit cards, debit cards, and digital wallets. Enterprise customers can also pay via bank transfer or invoice.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-2">Is there a free trial?</h3>
+                <p className="text-muted-foreground text-sm">
+                  Our Free plan is always free with no time limits. For Pro and Enterprise plans, we offer a 14-day free trial with full access to all features.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-2">What happens if I exceed my plan limits?</h3>
+                <p className="text-muted-foreground text-sm">
+                  We'll notify you when you're approaching your limits. You can upgrade your plan or purchase additional capacity as needed.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </section>
 
-      <Footer />
+        {/* CTA Section */}
+        <Card className="border-0 shadow-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+          <CardContent className="p-12 text-center">
+            <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+            <p className="text-xl mb-8 opacity-90">
+              Join thousands of renters who trust Leli Rentals for their rental needs.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                variant="secondary"
+                onClick={() => router.push('/signup')}
+                className="bg-white text-blue-600 hover:bg-gray-100"
+              >
+                Start Free Trial
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => router.push('/contact')}
+                className="border-white text-white hover:bg-white hover:text-blue-600"
+              >
+                Contact Sales
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

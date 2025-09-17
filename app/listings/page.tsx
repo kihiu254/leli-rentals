@@ -12,45 +12,37 @@ import { Search, Filter, Grid, List, MapPin, Star } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
-import { mockListings, getListingsByCategory } from "@/lib/mock-data"
+import { listingsService, Listing } from "@/lib/listings-service"
+import { useAuthContext } from "@/components/auth-provider"
 
-const categories = [
-  { id: "all", name: "All Categories", count: 12000 },
-  { id: "vehicles", name: "Vehicles", count: 1800 },
-  { id: "equipment", name: "Equipment", count: 3200 },
-  { id: "homes", name: "Homes & Apartments", count: 2500 },
-  { id: "events", name: "Event Spaces", count: 850 },
-  { id: "tech", name: "Electronics", count: 950 },
-  { id: "fashion", name: "Fashion", count: 700 },
-  { id: "tools", name: "Tools", count: 900 },
-  { id: "sports", name: "Sports & Recreation", count: 1200 },
-]
-
-const generateListings = (category: string, count = 24, offset = 0) => {
-  const listings = []
-  const categoryData =
-    category === "all"
-      ? Object.keys(mockListings).flatMap((cat) => getListingsByCategory(cat))
-      : getListingsByCategory(category)
-
-  // Get listings with offset for pagination
-  const startIndex = offset
-  const endIndex = Math.min(startIndex + count, categoryData.length)
-
-  return categoryData.slice(startIndex, endIndex)
-}
+// Categories will be loaded from database
 
 export default function ListingsPage() {
+  const { user } = useAuthContext()
   const searchParams = useSearchParams()
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [listings, setListings] = useState(generateListings("all", 24))
-  const [currentOffset, setCurrentOffset] = useState(24)
+  const [listings, setListings] = useState<Listing[]>([])
+  const [categories, setCategories] = useState<{ id: string; name: string; count: number }[]>([])
+  const [lastDoc, setLastDoc] = useState<any>(undefined)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
 
-    useEffect(() => {
+  // Load categories on component mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categoriesData = await listingsService.getCategories()
+        setCategories(categoriesData)
+      } catch (error) {
+        console.error("Error loading categories:", error)
+      }
+    }
+    loadCategories()
+  }, [])
+
+  useEffect(() => {
     const search = searchParams ? searchParams.get("search") : null
     const category = searchParams ? searchParams.get("category") : null
 
@@ -60,42 +52,59 @@ export default function ListingsPage() {
     if (category && categories.find((c) => c.id === category)) {
       setSelectedCategory(category)
     }
-  }, [searchParams])
+  }, [searchParams, categories])
 
   useEffect(() => {
-    const newListings = generateListings(selectedCategory, 24, 0)
-    setListings(newListings)
-    setCurrentOffset(24)
-    const totalCount =
-      selectedCategory === "all"
-        ? Object.values(mockListings).flat().length
-        : (mockListings[selectedCategory] || []).length
-    setHasMore(newListings.length < totalCount)
-  }, [selectedCategory])
+    const loadListings = async () => {
+      setIsLoading(true)
+      try {
+        const filters = {
+          category: selectedCategory === "all" ? undefined : selectedCategory,
+          search: searchQuery || undefined
+        }
+        
+        const { listings: newListings, hasMore: moreAvailable, lastDoc: newLastDoc } = 
+          await listingsService.getListings(filters, 24)
+        
+        setListings(newListings)
+        setLastDoc(newLastDoc)
+        setHasMore(moreAvailable)
+      } catch (error) {
+        console.error("Error loading listings:", error)
+        setListings([])
+        setHasMore(false)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadListings()
+  }, [selectedCategory, searchQuery])
 
-  const loadMore = () => {
+  const loadMore = async () => {
+    if (!hasMore || isLoading) return
+    
     setIsLoading(true)
-
-    // Simulate loading delay for better UX
-    setTimeout(() => {
-      const moreListings = generateListings(selectedCategory, 24, currentOffset)
+    try {
+      const filters = {
+        category: selectedCategory === "all" ? undefined : selectedCategory,
+        search: searchQuery || undefined
+      }
+      
+      const { listings: moreListings, hasMore: moreAvailable, lastDoc: newLastDoc } = 
+        await listingsService.getListings(filters, 24, lastDoc)
+      
       setListings((prev) => [...prev, ...moreListings])
-      setCurrentOffset((prev) => prev + 24)
-
-      const totalCount =
-        selectedCategory === "all"
-          ? Object.values(mockListings).flat().length
-          : (mockListings[selectedCategory] || []).length
-      setHasMore(currentOffset + 24 < totalCount)
+      setLastDoc(newLastDoc)
+      setHasMore(moreAvailable)
+    } catch (error) {
+      console.error("Error loading more listings:", error)
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
-  const filteredListings = listings.filter(
-    (listing) =>
-      listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      listing.category.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  // Listings are already filtered by the service
+  const filteredListings = listings
 
   return (
     <div className="min-h-screen bg-background">
@@ -185,8 +194,7 @@ export default function ListingsPage() {
                   decoding="async"
                   width={400}
                   height={300}
-                  style={{ objectFit: "cover", objectPosition: "center" }}
-                  className={`w-full object-cover ${
+                  className={`w-full object-cover object-center ${
                     viewMode === "grid" ? "h-48" : "h-32"
                   } group-hover:scale-105 transition-transform duration-300`}
                   onError={(e) => {
@@ -198,8 +206,8 @@ export default function ListingsPage() {
                   }}
                 />
                 <div className="absolute top-2 right-2 flex gap-2">
-                  <LikeButton itemId={listing.id} itemTitle={listing.title} />
-                  <ShareButton itemId={listing.id} itemTitle={listing.title} itemDescription={listing.description} />
+                  <LikeButton itemId={listing.id || ""} itemTitle={listing.title} />
+                  <ShareButton itemId={listing.id || ""} itemTitle={listing.title} itemDescription={listing.description} />
                 </div>
               </div>
 

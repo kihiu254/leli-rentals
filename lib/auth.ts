@@ -1,12 +1,26 @@
 "use client"
 
+import { useState, useEffect } from 'react'
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  User as FirebaseUser,
+  updateProfile,
+  sendEmailVerification
+} from 'firebase/auth'
+import { auth, googleProvider } from './firebase'
+import { userService, firebaseUserToUserProfile } from './user-service'
+
 // Auth utility functions and types
 export interface User {
   id: string
-  name: string
-  email: string
-  avatar?: string
-  createdAt: Date
+  name: string | null
+  email: string | null
+  avatar?: string | null
+  createdAt: Date | null
 }
 
 export interface AuthState {
@@ -15,112 +29,156 @@ export interface AuthState {
   isAuthenticated: boolean
 }
 
-// Mock auth functions - replace with your actual auth implementation
+// Convert Firebase User to our User interface
+function firebaseUserToUser(firebaseUser: FirebaseUser): User {
+  return {
+    id: firebaseUser.uid,
+    name: firebaseUser.displayName,
+    email: firebaseUser.email,
+    avatar: firebaseUser.photoURL,
+    createdAt: firebaseUser.metadata.creationTime ? new Date(firebaseUser.metadata.creationTime) : null,
+  }
+}
+
+// Auth API functions
 export const authAPI = {
   async signIn(email: string, password: string): Promise<User> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Mock user data
-    return {
-      id: "1",
-      name: "John Doe",
-      email,
-      avatar: "/user-avatar.jpg",
-      createdAt: new Date(),
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password)
+      const user = firebaseUserToUser(result.user)
+      
+      // Save/update user profile in database
+      try {
+        const userProfile = firebaseUserToUserProfile(result.user)
+        await userService.saveUserProfile(userProfile)
+      } catch (error) {
+        console.error('Error saving user profile:', error)
+      }
+      
+      return user
+    } catch (error: any) {
+      console.error('Email sign-in error:', error)
+      
+      if (error.code === 'auth/user-not-found') {
+        throw new Error('No account found with this email address.')
+      } else if (error.code === 'auth/wrong-password') {
+        throw new Error('Incorrect password. Please try again.')
+      } else if (error.code === 'auth/invalid-email') {
+        throw new Error('Invalid email address.')
+      } else if (error.code === 'auth/too-many-requests') {
+        throw new Error('Too many failed attempts. Please try again later.')
+      }
+      
+      throw new Error(error.message || 'Sign-in failed. Please try again.')
     }
   },
 
   async signUp(data: { name: string; email: string; password: string }): Promise<User> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const result = await createUserWithEmailAndPassword(auth, data.email, data.password)
+      // Update the display name
+      await updateProfile(result.user, { displayName: data.name })
+      
+      // Send email verification
+      try {
+        await sendEmailVerification(result.user)
+      } catch (verificationError) {
+        console.error('Error sending email verification:', verificationError)
+        // Don't throw here, as the user was created successfully
+      }
+      
+      const user = firebaseUserToUser(result.user)
+      
+      // Save user profile in database
+      try {
+        const userProfile = firebaseUserToUserProfile(result.user)
+        await userService.saveUserProfile(userProfile)
+      } catch (error) {
+        console.error('Error saving user profile:', error)
+      }
+      
+      return user
+    } catch (error: any) {
+      console.error('Email sign-up error:', error)
+      
+      if (error.code === 'auth/email-already-in-use') {
+        throw new Error('An account with this email already exists.')
+      } else if (error.code === 'auth/invalid-email') {
+        throw new Error('Invalid email address.')
+      } else if (error.code === 'auth/weak-password') {
+        throw new Error('Password is too weak. Please choose a stronger password.')
+      }
+      
+      throw new Error(error.message || 'Sign-up failed. Please try again.')
+    }
+  },
 
-    // Mock user data
-    return {
-      id: "2",
-      name: data.name,
-      email: data.email,
-      avatar: "/user-avatar.jpg",
-      createdAt: new Date(),
+  async signInWithGoogle(): Promise<User> {
+    try {
+      const result = await signInWithPopup(auth, googleProvider)
+      const user = firebaseUserToUser(result.user)
+      
+      // Save/update user profile in database
+      try {
+        const userProfile = firebaseUserToUserProfile(result.user)
+        await userService.saveUserProfile(userProfile)
+      } catch (error) {
+        console.error('Error saving user profile:', error)
+        // Don't throw here, as the auth was successful
+      }
+      
+      return user
+    } catch (error: any) {
+      console.error('Google sign-in error:', error)
+      
+      // Handle specific Firebase auth errors
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in was cancelled. Please try again.')
+      } else if (error.code === 'auth/network-request-failed') {
+        throw new Error('Network error. Please check your internet connection.')
+      } else if (error.code === 'auth/configuration-not-found') {
+        throw new Error('Firebase configuration error. Please contact support.')
+      }
+      
+      throw new Error(error.message || 'Google sign-in failed. Please try again.')
     }
   },
 
   async signOut(): Promise<void> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await firebaseSignOut(auth)
   },
 
   async getCurrentUser(): Promise<User | null> {
-    // Simulate checking for current user
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    // If the public env var is set, return a mock user for local testing
-    try {
-      if (typeof process !== 'undefined' && (process.env as any).NEXT_PUBLIC_ENABLE_MOCK_USER === '1') {
-        return {
-          id: 'mock-1',
-          name: 'Maggie Support',
-          email: 'maggie@lelirentals.com',
-          avatar: '/woman-profile.png',
-          createdAt: new Date(),
-        }
-      }
-    } catch (err) {
-      // ignore
-    }
-
-    // Fallback: check localStorage flag when running in the browser
-    try {
-      if (typeof window !== 'undefined' && window.localStorage.getItem('ENABLE_MOCK_USER') === '1') {
-        return {
-          id: 'mock-1',
-          name: 'Maggie Support',
-          email: 'maggie@lelirentals.com',
-          avatar: '/woman-profile.png',
-          createdAt: new Date(),
-        }
-      }
-    } catch (err) {}
-
-    // Default: not authenticated
-    return null
+    return new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        unsubscribe()
+        resolve(user ? firebaseUserToUser(user) : null)
+      })
+    })
   },
 }
 
 // Auth hook for client components
 export function useAuth(): AuthState {
-  // This would typically use React Context or a state management library
-  // For now, returning mock data
-  // If enabled via NEXT_PUBLIC_ENABLE_MOCK_USER or localStorage, return a mock user
-  try {
-    if (typeof process !== 'undefined' && (process.env as any).NEXT_PUBLIC_ENABLE_MOCK_USER === '1') {
-      const user: User = {
-        id: 'mock-1',
-        name: 'Maggie Support',
-        email: 'maggie@lelirentals.com',
-        avatar: '/woman-profile.png',
-        createdAt: new Date(),
-      }
-      return { user, isLoading: false, isAuthenticated: true }
-    }
-  } catch (err) {}
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  try {
-    if (typeof window !== 'undefined' && window.localStorage.getItem('ENABLE_MOCK_USER') === '1') {
-      const user: User = {
-        id: 'mock-1',
-        name: 'Maggie Support',
-        email: 'maggie@lelirentals.com',
-        avatar: '/woman-profile.png',
-        createdAt: new Date(),
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUserToUser(firebaseUser))
+      } else {
+        setUser(null)
       }
-      return { user, isLoading: false, isAuthenticated: true }
-    }
-  } catch (err) {}
+      setIsLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [])
 
   return {
-    user: null,
-    isLoading: false,
-    isAuthenticated: false,
+    user,
+    isLoading,
+    isAuthenticated: !!user,
   }
 }

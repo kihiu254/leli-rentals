@@ -1,0 +1,38 @@
+mutation CreateUser @auth(level: PUBLIC) {
+  user_insert(data: {
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@example.com",
+    passwordHash: "hashed_password",
+    userType: "renter",
+    createdAt_expr: "request.time"
+  })
+}
+
+query ListProperties @auth(level: PUBLIC) {
+  properties {
+    id
+    title
+    address
+    rentAmount
+  }
+}
+
+mutation CreateApplication($listingId: UUID!, $userId: UUID!, $personalStatement: String!) @auth(level: USER) {
+  application_insert(data: {
+    listingId: $listingId,
+    userId: $userId,
+    personalStatement: $personalStatement,
+    status: "pending",
+    submissionDate_expr: "request.time"
+  })
+}
+
+query GetUserProperties($ownerId: UUID!) @auth(level: USER) {
+  properties(where: { ownerId: { eq: $ownerId } }) {
+    id
+    title
+    address
+    rentAmount
+  }
+}

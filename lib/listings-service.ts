@@ -1,0 +1,249 @@
+import { 
+  collection, 
+  doc, 
+  getDocs, 
+  getDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  startAfter,
+  DocumentSnapshot,
+  QueryDocumentSnapshot
+} from "firebase/firestore"
+import { db } from "./firebase"
+
+export interface Listing {
+  id?: string
+  title: string
+  description: string
+  price: number
+  location: string
+  rating: number
+  reviews: number
+  image: string
+  amenities: string[]
+  available: boolean
+  category: string
+  owner: {
+    id: string
+    name: string
+    avatar: string
+    rating: number
+    verified: boolean
+  }
+  images: string[]
+  fullDescription: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export interface ListingFilters {
+  category?: string
+  minPrice?: number
+  maxPrice?: number
+  location?: string
+  available?: boolean
+  search?: string
+}
+
+export const listingsService = {
+  // Get all listings with optional filters
+  async getListings(filters: ListingFilters = {}, pageSize: number = 24, lastDoc?: QueryDocumentSnapshot): Promise<{ listings: Listing[], hasMore: boolean, lastDoc?: QueryDocumentSnapshot }> {
+    try {
+      let q = query(collection(db, "listings"))
+
+      // Apply filters
+      if (filters.category) {
+        q = query(q, where("category", "==", filters.category))
+      }
+      if (filters.available !== undefined) {
+        q = query(q, where("available", "==", filters.available))
+      }
+      if (filters.minPrice) {
+        q = query(q, where("price", ">=", filters.minPrice))
+      }
+      if (filters.maxPrice) {
+        q = query(q, where("price", "<=", filters.maxPrice))
+      }
+      if (filters.location) {
+        q = query(q, where("location", "==", filters.location))
+      }
+
+      // Order by creation date (newest first)
+      q = query(q, orderBy("createdAt", "desc"))
+      
+      // Apply pagination
+      if (lastDoc) {
+        q = query(q, startAfter(lastDoc))
+      }
+      q = query(q, limit(pageSize + 1)) // Get one extra to check if there are more
+
+      const snapshot = await getDocs(q)
+      const listings: Listing[] = []
+      let hasMore = false
+
+      snapshot.forEach((doc, index) => {
+        if (index < pageSize) {
+          listings.push({ id: doc.id, ...doc.data() } as Listing)
+        } else {
+          hasMore = true
+        }
+      })
+
+      const lastDocument = snapshot.docs[pageSize - 1]
+
+      // Apply search filter after fetching (Firestore doesn't support full-text search)
+      let filteredListings = listings
+      if (filters.search) {
+        const searchTerm = filters.search.toLowerCase()
+        filteredListings = listings.filter(listing => 
+          listing.title.toLowerCase().includes(searchTerm) ||
+          listing.description.toLowerCase().includes(searchTerm) ||
+          listing.category.toLowerCase().includes(searchTerm)
+        )
+      }
+
+      return { 
+        listings: filteredListings, 
+        hasMore, 
+        lastDoc: hasMore ? lastDocument : undefined 
+      }
+    } catch (error) {
+      console.error("Error fetching listings:", error)
+      throw new Error("Failed to fetch listings")
+    }
+  },
+
+  // Get listing by ID
+  async getListingById(id: string): Promise<Listing | null> {
+    try {
+      const docRef = doc(db, "listings", id)
+      const docSnap = await getDoc(docRef)
+      
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as Listing
+      }
+      return null
+    } catch (error) {
+      console.error("Error fetching listing:", error)
+      throw new Error("Failed to fetch listing")
+    }
+  },
+
+  // Get listings by user ID
+  async getUserListings(userId: string): Promise<Listing[]> {
+    try {
+      const q = query(
+        collection(db, "listings"),
+        where("owner.id", "==", userId),
+        orderBy("createdAt", "desc")
+      )
+      
+      const snapshot = await getDocs(q)
+      const listings: Listing[] = []
+      
+      snapshot.forEach((doc) => {
+        listings.push({ id: doc.id, ...doc.data() } as Listing)
+      })
+      
+      return listings
+    } catch (error) {
+      console.error("Error fetching user listings:", error)
+      throw new Error("Failed to fetch user listings")
+    }
+  },
+
+  // Create new listing
+  async createListing(listing: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    try {
+      const now = new Date()
+      const listingData = {
+        ...listing,
+        createdAt: now,
+        updatedAt: now
+      }
+      
+      const docRef = await addDoc(collection(db, "listings"), listingData)
+      return docRef.id
+    } catch (error) {
+      console.error("Error creating listing:", error)
+      throw new Error("Failed to create listing")
+    }
+  },
+
+  // Update listing
+  async updateListing(id: string, updates: Partial<Listing>): Promise<void> {
+    try {
+      const docRef = doc(db, "listings", id)
+      await updateDoc(docRef, {
+        ...updates,
+        updatedAt: new Date()
+      })
+    } catch (error) {
+      console.error("Error updating listing:", error)
+      throw new Error("Failed to update listing")
+    }
+  },
+
+  // Delete listing
+  async deleteListing(id: string): Promise<void> {
+    try {
+      const docRef = doc(db, "listings", id)
+      await deleteDoc(docRef)
+    } catch (error) {
+      console.error("Error deleting listing:", error)
+      throw new Error("Failed to delete listing")
+    }
+  },
+
+  // Get categories with counts
+  async getCategories(): Promise<{ id: string; name: string; count: number }[]> {
+    try {
+      const categories = [
+        { id: "all", name: "All Categories" },
+        { id: "vehicles", name: "Vehicles" },
+        { id: "equipment", name: "Equipment" },
+        { id: "homes", name: "Homes & Apartments" },
+        { id: "events", name: "Event Spaces" },
+        { id: "tech", name: "Electronics" },
+        { id: "fashion", name: "Fashion" },
+        { id: "tools", name: "Tools" },
+        { id: "sports", name: "Sports & Recreation" },
+      ]
+
+      // Get counts for each category
+      const categoriesWithCounts = await Promise.all(
+        categories.map(async (category) => {
+          if (category.id === "all") {
+            const allSnapshot = await getDocs(collection(db, "listings"))
+            return { ...category, count: allSnapshot.size }
+          } else {
+            const q = query(collection(db, "listings"), where("category", "==", category.id))
+            const snapshot = await getDocs(q)
+            return { ...category, count: snapshot.size }
+          }
+        })
+      )
+
+      return categoriesWithCounts
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+      // Return default categories if there's an error
+      return [
+        { id: "all", name: "All Categories", count: 0 },
+        { id: "vehicles", name: "Vehicles", count: 0 },
+        { id: "equipment", name: "Equipment", count: 0 },
+        { id: "homes", name: "Homes & Apartments", count: 0 },
+        { id: "events", name: "Event Spaces", count: 0 },
+        { id: "tech", name: "Electronics", count: 0 },
+        { id: "fashion", name: "Fashion", count: 0 },
+        { id: "tools", name: "Tools", count: 0 },
+        { id: "sports", name: "Sports & Recreation", count: 0 },
+      ]
+    }
+  }
+}

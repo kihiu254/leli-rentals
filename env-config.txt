@@ -1,0 +1,25 @@
+# Copy these environment variables to your .env.local file
+
+# Firebase Configuration (Keep your existing values)
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key_here
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain_here
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id_here
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket_here
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id_here
+NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id_here
+
+# PostgreSQL Configuration (Neon Cloud Database)
+POSTGRES_HOST=ep-long-paper-adi261yc-pooler.c-2.us-east-1.aws.neon.tech
+POSTGRES_PORT=5432
+POSTGRES_DB=neondb
+POSTGRES_USER=neondb_owner
+POSTGRES_PASSWORD=npg_uNQnixs7Yf2a
+
+# GraphQL Configuration
+NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:3000/api/graphql
+
+# Instructions:
+# 1. Copy this entire content
+# 2. Create a file named .env.local in your project root
+# 3. Paste this content into .env.local
+# 4. Replace the Firebase values with your actual Firebase credentials

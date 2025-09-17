@@ -1,0 +1,68 @@
+type User @table {
+  email: String!
+  passwordHash: String!
+  createdAt: Timestamp!
+  userType: String!
+  firstName: String
+  lastName: String
+  phoneNumber: String
+  profilePictureUrl: String
+}
+
+type Property @table {
+  owner: User!
+  title: String!
+  address: String!
+  rentAmount: Float!
+  bedrooms: Int!
+  bathrooms: Float!
+  propertyType: String!
+  createdAt: Timestamp!
+  description: String
+  squareFootage: Int
+  amenities: [String]
+  imageUrls: [String]
+}
+
+type Listing @table {
+  property: Property!
+  availableFrom: Date!
+  rentAmount: Float!
+  status: String!
+  createdAt: Timestamp!
+  leaseTerm: String
+  securityDeposit: Float
+}
+
+type Application @table {
+  user: User!
+  listing: Listing!
+  status: String!
+  submissionDate: Timestamp!
+  requestedMoveInDate: Date
+  numberOfOccupants: Int
+  personalStatement: String
+}
+
+type Agreement @table {
+  owner: User!
+  renter: User!
+  listing: Listing!
+  startDate: Date!
+  endDate: Date!
+  rentAmount: Float!
+  status: String!
+  createdAt: Timestamp!
+  termsAndConditions: String
+  documentUrl: String
+}
+
+type Payment @table {
+  agreement: Agreement!
+  amount: Float!
+  paymentDate: Timestamp!
+  status: String!
+  createdAt: Timestamp!
+  transactionId: String
+  notes: String
+}

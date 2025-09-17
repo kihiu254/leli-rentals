@@ -4,6 +4,8 @@ import { Suspense, useState, ReactNode } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import SupportChat from "@/components/support-chat"
+import { AuthProvider } from "@/components/auth-provider"
+import { NotificationProvider } from "@/lib/notification-context"
 
 interface ClientLayoutProps {
   children: any
@@ -15,9 +17,13 @@ export function ClientLayout({ children }: ClientLayoutProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-      <Suspense fallback={null}>{children}</Suspense>
-      <SupportChat isOpen={isChatOpen} onToggle={toggleChat} />
-      <Toaster />
+      <AuthProvider>
+        <NotificationProvider>
+          <Suspense fallback={null}>{children}</Suspense>
+          <SupportChat isOpen={isChatOpen} onToggle={toggleChat} />
+          <Toaster />
+        </NotificationProvider>
+      </AuthProvider>
     </ThemeProvider>
   )
 }

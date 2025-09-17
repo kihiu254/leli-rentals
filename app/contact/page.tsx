@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { useToast } from "@/hooks/use-toast"
+import AISupportChat from "@/components/ai-support-chat"
 import {
   Mail,
   Phone,
@@ -37,6 +38,7 @@ export default function ContactPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(false)
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,12 +93,11 @@ export default function ContactPage() {
         window.location.href = `tel:${contact.replace(/\D/g, "")}`
         break
       case "chat":
-        // Simulate opening chat widget
+        setIsChatOpen(true)
         toast({
-          title: "Opening Live Chat",
-          description: "Connecting you with our support team...",
+          title: "Opening AI Support Chat",
+          description: "Connecting you with our AI assistant...",
         })
-        // In a real app, this would open a chat widget
         break
       case "emergency":
         window.location.href = `tel:+254112081866`
@@ -111,7 +112,7 @@ export default function ContactPage() {
       icon: Mail,
       title: "Email Support",
       description: "Get help via email",
-      contact: "info@lelirentals.com",
+      contact: "lelirentals@gmail.com",
       responseTime: "Within 24 hours",
       color: "bg-blue-500/10 text-blue-600",
       method: "email",
@@ -456,6 +457,9 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+
+      {/* AI Support Chat */}
+      <AISupportChat isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
     </div>
   )
 }

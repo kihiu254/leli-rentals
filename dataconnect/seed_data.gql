@@ -1,0 +1,14 @@
+mutation PopulateDatabase @auth(level: USER) {
+  user_insertMany(data: [
+    {
+      email: "test1@example.com",
+      passwordHash: "somehash1",
+      userType: "renter"
+    },
+    {
+      email: "test2@example.com",
+      passwordHash: "somehash2",
+      userType: "owner"
+    }
+  ])
+}

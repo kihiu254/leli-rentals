@@ -12,41 +12,41 @@ import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff, Mail, Lock, Chrome } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+import { authAPI } from "@/lib/auth"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
   const { toast } = useToast()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      // Simulate API call with validation
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (!formData.email || !formData.password) {
-            reject(new Error("Please fill in all fields"))
-          } else if (formData.password.length < 6) {
-            reject(new Error("Password must be at least 6 characters"))
-          } else {
-            resolve(true)
-          }
-        }, 1000)
-      })
+      if (!formData.email || !formData.password) {
+        throw new Error("Please fill in all fields")
+      }
+      if (formData.password.length < 6) {
+        throw new Error("Password must be at least 6 characters")
+      }
+
+      await authAPI.signIn(formData.email, formData.password)
 
       toast({
         title: "Login successful!",
         description: "Welcome back to Leli Rentals.",
       })
 
-      // In a real app, redirect to dashboard or previous page
-      // window.location.href = '/dashboard'
+      // Redirect to profile page
+      router.push('/profile')
     } catch (error: any) {
       toast({
         title: "Login failed",
@@ -58,15 +58,29 @@ export default function LoginPage() {
     }
   }
 
-  const handleSocialLogin = (provider: string) => {
-    toast({
-      title: `Connecting to ${provider}`,
-      description: "Redirecting to authentication...",
-    })
+  const handleSocialLogin = async (provider: string) => {
+    if (provider === 'google') {
+      setIsGoogleLoading(true)
+      try {
+        await authAPI.signInWithGoogle()
+        
+        toast({
+          title: "Login successful!",
+          description: "Welcome back to Leli Rentals.",
+        })
 
-    // In a real app, this would redirect to OAuth provider
-    // Example: window.location.href = `/auth/${provider}`
-    console.log(`Login with ${provider}`)
+        // Redirect to profile page
+        router.push('/profile')
+      } catch (error: any) {
+        toast({
+          title: "Google login failed",
+          description: error.message || "Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsGoogleLoading(false)
+      }
+    }
   }
 
   return (
@@ -84,9 +98,14 @@ export default function LoginPage() {
             <CardContent className="space-y-6">
               {/* Social Login Buttons */}
               <div className="space-y-3">
-                <Button variant="outline" className="w-full bg-transparent" onClick={() => handleSocialLogin("google")}>
+                <Button 
+                  variant="outline" 
+                  className="w-full bg-transparent" 
+                  onClick={() => handleSocialLogin("google")}
+                  disabled={isGoogleLoading || isLoading}
+                >
                   <Chrome className="mr-2 h-4 w-4" />
-                  Continue with Google
+                  {isGoogleLoading ? "Signing in..." : "Continue with Google"}
                 </Button>
                 {/* GitHub login removed */}
               </div>
@@ -96,7 +115,7 @@ export default function LoginPage() {
                   <Separator className="w-full" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+                  <span className="bg-background px-2 text-muted-foreground font-medium">Or continue with email</span>
                 </div>
               </div>
 
@@ -153,7 +172,11 @@ export default function LoginPage() {
                   </Link>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+                  disabled={isLoading || isGoogleLoading}
+                >
                   {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
