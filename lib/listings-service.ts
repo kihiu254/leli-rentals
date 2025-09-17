@@ -16,6 +16,11 @@ import {
 } from "firebase/firestore"
 import { db } from "./firebase"
 
+// Check if Firebase is properly initialized
+const isFirebaseInitialized = () => {
+  return !!db
+}
+
 export interface Listing {
   id?: string
   title: string
@@ -53,6 +58,10 @@ export interface ListingFilters {
 export const listingsService = {
   // Get all listings with optional filters
   async getListings(filters: ListingFilters = {}, pageSize: number = 24, lastDoc?: QueryDocumentSnapshot): Promise<{ listings: Listing[], hasMore: boolean, lastDoc?: QueryDocumentSnapshot }> {
+    if (!isFirebaseInitialized()) {
+      return { listings: [], hasMore: false }
+    }
+    
     try {
       let q = query(collection(db, "listings"))
 
@@ -119,6 +128,10 @@ export const listingsService = {
 
   // Get listing by ID
   async getListingById(id: string): Promise<Listing | null> {
+    if (!isFirebaseInitialized()) {
+      return null
+    }
+    
     try {
       const docRef = doc(db, "listings", id)
       const docSnap = await getDoc(docRef)
@@ -135,6 +148,10 @@ export const listingsService = {
 
   // Get listings by user ID
   async getUserListings(userId: string): Promise<Listing[]> {
+    if (!isFirebaseInitialized()) {
+      return []
+    }
+    
     try {
       const q = query(
         collection(db, "listings"),
@@ -158,6 +175,10 @@ export const listingsService = {
 
   // Create new listing
   async createListing(listing: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const now = new Date()
       const listingData = {
@@ -176,6 +197,10 @@ export const listingsService = {
 
   // Update listing
   async updateListing(id: string, updates: Partial<Listing>): Promise<void> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const docRef = doc(db, "listings", id)
       await updateDoc(docRef, {
@@ -190,6 +215,10 @@ export const listingsService = {
 
   // Delete listing
   async deleteListing(id: string): Promise<void> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const docRef = doc(db, "listings", id)
       await deleteDoc(docRef)

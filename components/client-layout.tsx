@@ -3,7 +3,7 @@
 import { Suspense, useState, ReactNode } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
-import SupportChat from "@/components/support-chat"
+import AISupportChat from "@/components/ai-support-chat"
 import { AuthProvider } from "@/components/auth-provider"
 import { NotificationProvider } from "@/lib/notification-context"
 
@@ -20,7 +20,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       <AuthProvider>
         <NotificationProvider>
           <Suspense fallback={null}>{children}</Suspense>
-          <SupportChat isOpen={isChatOpen} onToggle={toggleChat} />
+          <AISupportChat isOpen={isChatOpen} onToggle={toggleChat} />
           <Toaster />
         </NotificationProvider>
       </AuthProvider>

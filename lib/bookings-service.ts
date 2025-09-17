@@ -14,6 +14,11 @@ import {
 } from "firebase/firestore"
 import { db } from "./firebase"
 
+// Check if Firebase is properly initialized
+const isFirebaseInitialized = () => {
+  return !!db
+}
+
 export interface Booking {
   id?: string
   listingId: string
@@ -50,6 +55,10 @@ export interface BookingFilters {
 export const bookingsService = {
   // Get bookings with optional filters
   async getBookings(filters: BookingFilters = {}): Promise<Booking[]> {
+    if (!isFirebaseInitialized()) {
+      return []
+    }
+    
     try {
       let q = query(collection(db, "bookings"))
 
@@ -95,6 +104,10 @@ export const bookingsService = {
 
   // Get booking by ID
   async getBookingById(id: string): Promise<Booking | null> {
+    if (!isFirebaseInitialized()) {
+      return null
+    }
+    
     try {
       const docRef = doc(db, "bookings", id)
       const docSnap = await getDoc(docRef)
@@ -130,6 +143,10 @@ export const bookingsService = {
 
   // Create new booking
   async createBooking(booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const now = new Date()
       const bookingData = {
@@ -153,6 +170,10 @@ export const bookingsService = {
 
   // Update booking
   async updateBooking(id: string, updates: Partial<Booking>): Promise<void> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const docRef = doc(db, "bookings", id)
       const updateData: any = {
@@ -178,6 +199,10 @@ export const bookingsService = {
 
   // Delete booking
   async deleteBooking(id: string): Promise<void> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const docRef = doc(db, "bookings", id)
       await deleteDoc(docRef)

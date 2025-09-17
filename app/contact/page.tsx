@@ -95,8 +95,8 @@ export default function ContactPage() {
       case "chat":
         setIsChatOpen(true)
         toast({
-          title: "Opening AI Support Chat",
-          description: "Connecting you with our AI assistant...",
+          title: "🤖 AI Support Chat Opened",
+          description: "Our AI assistant Sarah is ready to help! She can escalate to human support if needed.",
         })
         break
       case "emergency":
@@ -128,10 +128,10 @@ export default function ContactPage() {
     },
     {
       icon: MessageSquare,
-      title: "Live Chat",
-      description: "Chat with us instantly",
-      contact: "Available on website",
-      responseTime: "Average 2 min response",
+      title: "Live Chat with Sarah",
+      description: "AI-powered support with human escalation",
+      contact: "Available 24/7",
+      responseTime: "Instant AI response",
       color: "bg-purple-500/10 text-purple-600",
       method: "chat",
     },
@@ -240,7 +240,9 @@ export default function ContactPage() {
               {contactMethods.map((method, index) => (
                 <Card
                   key={index}
-                  className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                  className={`border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer ${
+                    method.method === "chat" ? "ring-2 ring-purple-200 bg-gradient-to-br from-purple-50 to-blue-50" : ""
+                  }`}
                   onClick={() => handleContactMethod(method.method, method.contact)}
                 >
                   <CardContent className="p-6 text-center">
@@ -249,7 +251,14 @@ export default function ContactPage() {
                     >
                       <method.icon className="h-8 w-8" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">{method.title}</h3>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <h3 className="text-lg font-semibold text-foreground">{method.title}</h3>
+                      {method.method === "chat" && (
+                        <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
+                          Recommended
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground mb-3">{method.description}</p>
                     <p className="font-medium text-foreground mb-2">{method.contact}</p>
                     <p className="text-xs text-muted-foreground">{method.responseTime}</p>

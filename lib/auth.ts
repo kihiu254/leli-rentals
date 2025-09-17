@@ -12,6 +12,11 @@ import {
   sendEmailVerification
 } from 'firebase/auth'
 import { auth, googleProvider } from './firebase'
+
+// Check if Firebase is properly initialized
+const isFirebaseInitialized = () => {
+  return auth && googleProvider
+}
 import { userService, firebaseUserToUserProfile } from './user-service'
 
 // Auth utility functions and types
@@ -44,6 +49,10 @@ function firebaseUserToUser(firebaseUser: FirebaseUser): User {
 // Auth API functions
 export const authAPI = {
   async signIn(email: string, password: string): Promise<User> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const result = await signInWithEmailAndPassword(auth, email, password)
       const user = firebaseUserToUser(result.user)
@@ -75,6 +84,10 @@ export const authAPI = {
   },
 
   async signUp(data: { name: string; email: string; password: string }): Promise<User> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const result = await createUserWithEmailAndPassword(auth, data.email, data.password)
       // Update the display name
@@ -115,6 +128,10 @@ export const authAPI = {
   },
 
   async signInWithGoogle(): Promise<User> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const result = await signInWithPopup(auth, googleProvider)
       const user = firebaseUserToUser(result.user)
@@ -146,10 +163,18 @@ export const authAPI = {
   },
 
   async signOut(): Promise<void> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     await firebaseSignOut(auth)
   },
 
   async getCurrentUser(): Promise<User | null> {
+    if (!isFirebaseInitialized()) {
+      return null
+    }
+    
     return new Promise((resolve) => {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         unsubscribe()
@@ -165,6 +190,12 @@ export function useAuth(): AuthState {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    if (!isFirebaseInitialized()) {
+      setUser(null)
+      setIsLoading(false)
+      return
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUserToUser(firebaseUser))

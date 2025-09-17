@@ -239,6 +239,49 @@
     0 10px 10px rgba(0, 0, 0, 0.04);
 }
 
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  .ai-support-chat {
+    border-radius: 12px;
+    margin: 0;
+  }
+  
+  .message-bubble {
+    max-width: 85%;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  
+  .quick-reply {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 16px;
+  }
+  
+  .professional-shadow-lg {
+    box-shadow: 
+      0 4px 6px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  .quick-reply:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .professional-hover:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .message-bubble {
+    padding: 14px 18px;
+  }
+}
+
 /* Responsive animations */
 @media (prefers-reduced-motion: reduce) {
   * {

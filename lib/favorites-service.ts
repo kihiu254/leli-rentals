@@ -5,11 +5,17 @@ import {
   getDoc, 
   addDoc, 
   deleteDoc, 
+  updateDoc,
   query, 
   where, 
   orderBy
 } from "firebase/firestore"
 import { db } from "./firebase"
+
+// Check if Firebase is properly initialized
+const isFirebaseInitialized = () => {
+  return !!db
+}
 
 export interface Favorite {
   id?: string
@@ -32,6 +38,10 @@ export interface Favorite {
 export const favoritesService = {
   // Get user's favorites
   async getUserFavorites(userId: string): Promise<Favorite[]> {
+    if (!isFirebaseInitialized()) {
+      return []
+    }
+    
     try {
       // Use simple query without orderBy to avoid index requirement
       const q = query(
@@ -73,6 +83,10 @@ export const favoritesService = {
 
   // Check if listing is favorited by user
   async isFavorited(userId: string, listingId: string): Promise<boolean> {
+    if (!isFirebaseInitialized()) {
+      return false
+    }
+    
     try {
       const q = query(
         collection(db, "favorites"),
@@ -90,6 +104,10 @@ export const favoritesService = {
 
   // Add to favorites
   async addToFavorites(userId: string, listingId: string, listingData: Omit<Favorite, 'id' | 'userId' | 'listingId' | 'addedDate' | 'lastViewed'>): Promise<string> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       // Check if already favorited
       const isAlreadyFavorited = await this.isFavorited(userId, listingId)
@@ -115,6 +133,10 @@ export const favoritesService = {
 
   // Remove from favorites
   async removeFromFavorites(userId: string, listingId: string): Promise<void> {
+    if (!isFirebaseInitialized()) {
+      throw new Error('Firebase is not properly configured. Please check your environment variables.')
+    }
+    
     try {
       const q = query(
         collection(db, "favorites"),
@@ -150,7 +172,7 @@ export const favoritesService = {
       
       if (!snapshot.empty) {
         const docRef = snapshot.docs[0].ref
-        await docRef.update({
+        await updateDoc(docRef, {
           lastViewed: new Date()
         })
       }

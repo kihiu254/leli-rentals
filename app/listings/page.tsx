@@ -110,30 +110,30 @@ export default function ListingsPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-8">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-7xl py-6 sm:py-8">
         {/* Search and Filters */}
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row gap-4 mb-6">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 placeholder="Search rentals..."
-                className="pl-10 h-12"
+                className="pl-10 h-10 sm:h-12 text-sm sm:text-base"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="h-12 px-4 bg-transparent">
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
+            <div className="flex gap-2 sm:gap-3">
+              <Button variant="outline" className="h-10 sm:h-12 px-3 sm:px-4 bg-transparent text-sm">
+                <Filter className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Filters</span>
               </Button>
               <div className="flex border rounded-lg">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="rounded-r-none"
+                  className="rounded-r-none h-10 sm:h-12 px-2 sm:px-3"
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
@@ -141,7 +141,7 @@ export default function ListingsPage() {
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="rounded-l-none"
+                  className="rounded-l-none h-10 sm:h-12 px-2 sm:px-3"
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -150,16 +150,16 @@ export default function ListingsPage() {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1 sm:gap-2">
             {categories.map((category) => (
               <Button
                 key={category.id}
                 variant={selectedCategory === category.id ? "default" : "outline"}
                 onClick={() => setSelectedCategory(category.id)}
-                className="h-10"
+                className="h-8 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm"
               >
-                {category.name}
-                <Badge variant="secondary" className="ml-2">
+                <span className="truncate max-w-[80px] sm:max-w-none">{category.name}</span>
+                <Badge variant="secondary" className="ml-1 sm:ml-2 text-[10px] sm:text-xs px-1 sm:px-2">
                   {category.count.toLocaleString()}
                 </Badge>
               </Button>
@@ -178,7 +178,7 @@ export default function ListingsPage() {
 
         {/* Listings Grid */}
         <div
-          className={`grid gap-6 ${
+          className={`grid gap-3 sm:gap-4 md:gap-6 ${
             viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
           }`}
         >
@@ -195,7 +195,7 @@ export default function ListingsPage() {
                   width={400}
                   height={300}
                   className={`w-full object-cover object-center ${
-                    viewMode === "grid" ? "h-48" : "h-32"
+                    viewMode === "grid" ? "h-40 sm:h-48" : "h-24 sm:h-32"
                   } group-hover:scale-105 transition-transform duration-300`}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement
@@ -211,32 +211,32 @@ export default function ListingsPage() {
                 </div>
               </div>
 
-              <CardContent className="p-4">
+              <CardContent className="p-3 sm:p-4">
                 <div className={`${viewMode === "list" ? "flex justify-between items-start" : ""}`}>
                   <div className={viewMode === "list" ? "flex-1" : ""}>
-                    <h3 className="font-semibold text-lg mb-2 line-clamp-2">{listing.title}</h3>
+                    <h3 className="font-semibold text-base sm:text-lg mb-2 line-clamp-2">{listing.title}</h3>
 
                     <div className="flex items-center gap-2 mb-2">
                       <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{listing.rating}</span>
-                        <span className="text-sm text-muted-foreground">({listing.reviews})</span>
+                        <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs sm:text-sm font-medium">{listing.rating}</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground">({listing.reviews})</span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-1 mb-3">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{listing.location}</span>
+                      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                      <span className="text-xs sm:text-sm text-muted-foreground truncate">{listing.location}</span>
                     </div>
                   </div>
 
                   <div className={`${viewMode === "list" ? "text-right ml-4" : ""}`}>
                     <div className="flex items-baseline gap-1 mb-3">
-                      <span className="text-2xl font-bold text-primary">KSh {listing.price}</span>
-                      <span className="text-sm text-muted-foreground">/day</span>
+                      <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">KSh {listing.price}</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">/day</span>
                     </div>
 
-                    <Button asChild className="w-full">
+                    <Button asChild className="w-full text-xs sm:text-sm h-8 sm:h-10">
                       <Link href={`/listings/${listing.id}`}>View Details</Link>
                     </Button>
                   </div>

@@ -6,7 +6,8 @@ This guide will help you set up Google authentication with Firebase for your Lel
 
 1. A Google account
 2. A Firebase project
-3. Node.js and npm/pnpm installed
+3. Node.js and 
+npm/pnpm installed
 
 ## Step 1: Create a Firebase Project
 

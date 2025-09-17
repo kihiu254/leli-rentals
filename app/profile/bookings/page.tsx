@@ -194,21 +194,22 @@ export default function BookingsPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 My Bookings
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
                 Manage your rental bookings and track their status
               </p>
             </div>
             <Button 
               onClick={() => router.back()}
               variant="outline"
+              className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
             >
               Back to Profile
             </Button>
@@ -216,64 +217,64 @@ export default function BookingsPage() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
           <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Calendar className="h-5 w-5 text-blue-600" />
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">{bookings.length}</div>
-                  <div className="text-sm text-muted-foreground">Total Bookings</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{bookings.length}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Bookings</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">
                     {bookings.filter(b => b.status === "confirmed").length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Confirmed</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Confirmed</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-purple-600" />
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg">
+                  <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">
                     ${bookings.reduce((sum, b) => sum + b.totalPrice, 0).toFixed(0)}
                   </div>
-                  <div className="text-sm text-muted-foreground">Total Spent</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Spent</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Star className="h-5 w-5 text-orange-600" />
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-orange-100 rounded-lg">
+                  <Star className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-orange-600">
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">
                     {bookings.length > 0 ? (Math.round(bookings.reduce((sum, b) => sum + b.ownerRating, 0) / bookings.length * 10) / 10).toFixed(1) : "0.0"}
                   </div>
-                  <div className="text-sm text-muted-foreground">Avg. Owner Rating</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Avg. Owner Rating</div>
                 </div>
               </div>
             </CardContent>
@@ -281,9 +282,9 @@ export default function BookingsPage() {
         </div>
 
         {/* Filters and Search */}
-        <Card className="border-0 shadow-lg mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
+        <Card className="border-0 shadow-lg mb-4 sm:mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -291,11 +292,11 @@ export default function BookingsPage() {
                     placeholder="Search bookings..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-9 sm:h-10 text-sm sm:text-base"
                   />
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
@@ -424,7 +425,7 @@ export default function BookingsPage() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => handleDownloadReceipt(booking.id)}
+                                onClick={() => booking.id && handleDownloadReceipt(booking.id)}
                               >
                                 <Download className="h-4 w-4 mr-1" />
                                 Receipt
@@ -438,7 +439,7 @@ export default function BookingsPage() {
                                     variant="outline" 
                                     size="sm"
                                     className="text-red-600 hover:text-red-700"
-                                    onClick={() => setCancellingBookingId(booking.id)}
+                                    onClick={() => booking.id && setCancellingBookingId(booking.id)}
                                   >
                                     <XCircle className="h-4 w-4 mr-1" />
                                     Cancel Booking
@@ -459,7 +460,7 @@ export default function BookingsPage() {
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Keep Booking</AlertDialogCancel>
                                     <AlertDialogAction
-                                      onClick={() => handleCancelBooking(booking.id)}
+                                      onClick={() => booking.id && handleCancelBooking(booking.id)}
                                       className="bg-red-600 hover:bg-red-700"
                                     >
                                       Cancel Booking

@@ -274,36 +274,37 @@ export default function ListingsPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 My Listings
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
                 Manage your rental listings and track their performance
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button 
                 onClick={() => router.back()}
                 variant="outline"
+                className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
               >
                 Back to Profile
               </Button>
               <Dialog open={isCreatingListing} onOpenChange={setIsCreatingListing}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                    <Plus className="h-4 w-4 mr-2" />
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10">
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     Create Listing
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">Create New Listing</DialogTitle>
-                    <DialogDescription>Add a new item to your rental listings</DialogDescription>
+                    <DialogTitle className="text-xl sm:text-2xl font-bold">Create New Listing</DialogTitle>
+                    <DialogDescription className="text-sm sm:text-base">Add a new item to your rental listings</DialogDescription>
                   </DialogHeader>
 
                   <form onSubmit={handleCreateListing} className="space-y-6">

@@ -93,17 +93,27 @@ export const userSettingsService = {
   async updateProfile(uid: string, profileData: Partial<UserSettings['profile']>): Promise<void> {
     try {
       const existingSettings = await this.getUserSettings(uid)
-      const mergedProfile = {
-        name: existingSettings?.profile.name || "",
-        email: existingSettings?.profile.email || "",
+      const existingProfile = existingSettings?.profile || {
+        name: "",
+        email: "",
         phone: "",
         location: "",
         bio: "",
         website: "",
-        avatar: "",
-        ...existingSettings?.profile,
+        avatar: ""
+      }
+      
+      const mergedProfile = {
+        name: existingProfile.name || "",
+        email: existingProfile.email || "",
+        phone: existingProfile.phone || "",
+        location: existingProfile.location || "",
+        bio: existingProfile.bio || "",
+        website: existingProfile.website || "",
+        avatar: existingProfile.avatar || "",
         ...profileData
       }
+      
       await this.saveUserSettings(uid, {
         profile: mergedProfile
       })
@@ -117,17 +127,21 @@ export const userSettingsService = {
   async updateNotificationSettings(uid: string, notificationSettings: Partial<UserSettings['notifications']>): Promise<void> {
     try {
       const existingSettings = await this.getUserSettings(uid)
-      const mergedNotifications = {
+      const existingNotifications = existingSettings?.notifications || {
         emailNotifications: true,
         smsNotifications: false,
         pushNotifications: true,
         marketingEmails: false,
         bookingUpdates: true,
         paymentReminders: true,
-        securityAlerts: true,
-        ...existingSettings?.notifications,
+        securityAlerts: true
+      }
+      
+      const mergedNotifications = {
+        ...existingNotifications,
         ...notificationSettings
       }
+      
       await this.saveUserSettings(uid, {
         notifications: mergedNotifications
       })
@@ -141,16 +155,20 @@ export const userSettingsService = {
   async updatePrivacySettings(uid: string, privacySettings: Partial<UserSettings['privacy']>): Promise<void> {
     try {
       const existingSettings = await this.getUserSettings(uid)
-      const mergedPrivacy = {
+      const existingPrivacy = existingSettings?.privacy || {
         profileVisibility: "public" as const,
         showEmail: false,
         showPhone: false,
         showLocation: true,
         allowMessages: true,
-        showOnlineStatus: true,
-        ...existingSettings?.privacy,
+        showOnlineStatus: true
+      }
+      
+      const mergedPrivacy = {
+        ...existingPrivacy,
         ...privacySettings
       }
+      
       await this.saveUserSettings(uid, {
         privacy: mergedPrivacy
       })

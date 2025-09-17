@@ -381,20 +381,20 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8">
         {/* Modern Profile Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Card className="border-0 shadow-xl bg-gradient-to-r from-white to-blue-50/30 overflow-hidden">
-            <CardContent className="p-8">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
-                <div className="relative group">
-                  <Avatar className="h-32 w-32 ring-4 ring-white shadow-lg">
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 sm:gap-6 md:gap-8">
+                <div className="relative group mx-auto lg:mx-0">
+                  <Avatar className="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 ring-2 sm:ring-4 ring-white shadow-lg">
                     <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name || "User"} />
-                    <AvatarFallback className="text-3xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    <AvatarFallback className="text-xl sm:text-2xl md:text-3xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                       {user.name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -bottom-2 -right-2">
+                  <div className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2">
                     <input
                       type="file"
                       accept="image/*"
@@ -406,75 +406,75 @@ export default function ProfilePage() {
                     <Button 
                       size="icon" 
                       variant="secondary" 
-                      className="h-10 w-10 rounded-full shadow-lg bg-white hover:bg-gray-50"
+                      className="h-8 w-8 sm:h-10 sm:w-10 rounded-full shadow-lg bg-white hover:bg-gray-50"
                       asChild
                     >
                       <label htmlFor="profile-image-upload" className="cursor-pointer">
                         {isUploadingImage ? (
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                          <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 border-b-2 border-primary"></div>
                         ) : (
-                          <Camera className="h-5 w-5" />
+                          <Camera className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                         )}
                       </label>
                     </Button>
                   </div>
                 </div>
 
-                <div className="flex-1">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="flex-1 text-center lg:text-left">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                           {user.name || "Welcome to Leli Rentals"}
                         </h1>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm">
                           <Shield className="h-3 w-3 mr-1" />
                           Verified
                         </Badge>
                       </div>
                       
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4" />
-                          <span className="text-sm">{user.email}</span>
+                      <div className="flex flex-col gap-2 sm:gap-4 text-muted-foreground">
+                        <div className="flex items-center justify-center lg:justify-start gap-2">
+                          <Mail className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="text-xs sm:text-sm truncate">{user.email}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
-                          <span className="text-sm">{profileData.location}</span>
+                        <div className="flex items-center justify-center lg:justify-start gap-2">
+                          <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="text-xs sm:text-sm">{profileData.location}</span>
                         </div>
                       </div>
                       
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="font-semibold text-lg">{userStats.averageRating.toFixed(1)}</span>
-                              <span className="text-muted-foreground text-sm">({userProfile?.rating.count || 0} reviews)</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                            <div className="flex items-center justify-center lg:justify-start gap-1">
+                              <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
+                              <span className="font-semibold text-sm sm:text-base md:text-lg">{userStats.averageRating.toFixed(1)}</span>
+                              <span className="text-muted-foreground text-xs sm:text-sm">({userProfile?.rating.count || 0} reviews)</span>
                             </div>
-                            <div className="text-muted-foreground text-sm">
+                            <div className="text-muted-foreground text-xs sm:text-sm text-center lg:text-left">
                               Member since {membershipInfo.joinDate.getFullYear()} • {membershipInfo.membershipDuration} days
                             </div>
-                            <Badge variant={membershipInfo.membershipType === 'premium' ? 'default' : 'secondary'} className="ml-2">
+                            <Badge variant={membershipInfo.membershipType === 'premium' ? 'default' : 'secondary'} className="text-xs sm:text-sm mx-auto lg:mx-0">
                               {membershipInfo.membershipType.toUpperCase()}
                             </Badge>
                           </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                       <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                         <DialogTrigger asChild>
-                          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
-                            <Edit className="h-4 w-4 mr-2" />
+                          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg text-sm sm:text-base h-9 sm:h-10">
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             Edit Profile
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle className="text-2xl font-bold">Edit Profile</DialogTitle>
-                            <DialogDescription>Update your profile information and preferences</DialogDescription>
+                            <DialogTitle className="text-xl sm:text-2xl font-bold">Edit Profile</DialogTitle>
+                            <DialogDescription className="text-sm sm:text-base">Update your profile information and preferences</DialogDescription>
                           </DialogHeader>
 
-                          <form onSubmit={handleProfileUpdate} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <form onSubmit={handleProfileUpdate} className="space-y-4 sm:space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                               <div>
                                 <Label htmlFor="name">Full Name</Label>
                                 <Input
@@ -548,24 +548,24 @@ export default function ProfilePage() {
               </div>
 
               {/* Enhanced Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-8 border-t border-gray-200">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200">
                 <div className="text-center group">
-                  <div className="text-3xl font-bold text-blue-600 mb-1">{userStats.totalListings}</div>
-                  <div className="text-sm text-muted-foreground font-medium">Active Listings</div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600 mb-1">{userStats.totalListings}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Active Listings</div>
                 </div>
                 <div className="text-center group">
-                  <div className="text-3xl font-bold text-green-600 mb-1">{userStats.totalBookings}</div>
-                  <div className="text-sm text-muted-foreground font-medium">Total Bookings</div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-1">{userStats.totalBookings}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Total Bookings</div>
                 </div>
                 <div className="text-center group">
-                  <div className="text-3xl font-bold text-purple-600 mb-1">${userStats.totalEarnings}</div>
-                  <div className="text-sm text-muted-foreground font-medium">Earnings</div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-600 mb-1">${userStats.totalEarnings}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Earnings</div>
                 </div>
                 <div className="text-center group">
-                  <div className="text-3xl font-bold text-orange-600 mb-1">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-orange-600 mb-1">
                     {userStats.averageRating > 0 ? userStats.averageRating.toFixed(1) : "0.0"}
                   </div>
-                  <div className="text-sm text-muted-foreground font-medium">Rating</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">Rating</div>
                 </div>
               </div>
             </CardContent>
@@ -574,71 +574,71 @@ export default function ProfilePage() {
 
         {/* Modern Profile Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 bg-white shadow-lg border-0 rounded-xl p-1">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Overview
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-white shadow-lg border-0 rounded-xl p-1 gap-1">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg text-xs sm:text-sm">
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="listings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
-              <Users className="h-4 w-4 mr-2" />
-              My Listings
+            <TabsTrigger value="listings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg text-xs sm:text-sm">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">My Listings</span>
             </TabsTrigger>
-            <TabsTrigger value="bookings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
-              <Calendar className="h-4 w-4 mr-2" />
-              My Bookings
+            <TabsTrigger value="bookings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg text-xs sm:text-sm">
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">My Bookings</span>
             </TabsTrigger>
-            <TabsTrigger value="reviews" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
-              <Star className="h-4 w-4 mr-2" />
-              Reviews
+            <TabsTrigger value="reviews" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg text-xs sm:text-sm">
+              <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Reviews</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
+            <TabsTrigger value="settings" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg text-xs sm:text-sm">
+              <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Quick Actions */}
               <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-purple-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <Award className="h-5 w-5 text-blue-600" />
+                <CardHeader className="pb-3 sm:pb-6">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Award className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                     Quick Actions
                   </CardTitle>
-                  <CardDescription>Manage your Leli Rentals experience</CardDescription>
+                  <CardDescription className="text-sm sm:text-base">Manage your Leli Rentals experience</CardDescription>
                 </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-3 sm:space-y-4">
                       <Button 
-                        className="w-full justify-start bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                        className="w-full justify-start bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white h-9 sm:h-10 text-sm sm:text-base"
                         onClick={() => router.push('/listings/create')}
                       >
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         Create New Listing
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="w-full justify-start"
+                        className="w-full justify-start h-9 sm:h-10 text-sm sm:text-base"
                         onClick={() => router.push('/profile/bookings')}
                       >
-                        <Calendar className="h-4 w-4 mr-2" />
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         View My Bookings
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="w-full justify-start"
+                        className="w-full justify-start h-9 sm:h-10 text-sm sm:text-base"
                         onClick={() => router.push('/profile/billing')}
                       >
-                        <CreditCard className="h-4 w-4 mr-2" />
+                        <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         Payment Methods
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="w-full justify-start"
+                        className="w-full justify-start h-9 sm:h-10 text-sm sm:text-base"
                         onClick={() => router.push('/help')}
                       >
-                        <HelpCircle className="h-4 w-4 mr-2" />
+                        <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         Help & Support
                       </Button>
                     </CardContent>

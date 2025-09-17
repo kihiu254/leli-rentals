@@ -91,17 +91,17 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
           }
         })
 
-        // Add welcome message
+        // Add welcome message from Sarah
         const welcomeMessage: SupportMessage = {
           id: `welcome-${Date.now()}`,
-          sender: 'ai',
-          content: "👋 Hi! I'm your AI support assistant. I can help you with bookings, payments, account issues, and more. How can I assist you today?",
+          sender: 'agent',
+          content: "👋 Hi! I'm Sarah, your AI-powered support assistant. I can help you with bookings, payments, account issues, and more. If I can't solve your problem, I'll connect you with a human agent. How can I assist you today?",
           timestamp: new Date(),
           type: 'text',
           metadata: {
             isAI: true,
             confidence: 1.0,
-            suggestedActions: ['Create a listing', 'Help with booking', 'Account support'],
+            suggestedActions: ['Create a listing', 'Help with booking', 'Account support', 'Payment issues'],
             category: 'general'
           }
         }
@@ -159,7 +159,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
           const escalationMessage: SupportMessage = {
             id: `escalation-${Date.now()}`,
             sender: 'agent',
-            content: "👨‍💼 Hi! I'm Sarah, a human support agent. I've been assigned to help you with this issue. How can I assist you further?",
+            content: "I've escalated your request to our human support team. A specialist will be with you shortly to provide more detailed assistance. In the meantime, is there anything else I can help you with?",
             timestamp: new Date(),
             type: 'text',
             metadata: {
@@ -254,56 +254,75 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
     return (
       <Button 
         onClick={onToggle} 
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 animate-pulse"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-12 w-12 sm:h-14 sm:w-14 rounded-full shadow-lg z-50 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 animate-pulse transition-all duration-300 hover:scale-110"
         size="icon"
+        aria-label="Open AI Support Chat"
       >
-        <MessageCircle className="h-6 w-6" />
+        <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
       </Button>
     )
   }
 
   return (
-    <Card className="fixed bottom-6 right-6 w-96 h-[600px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300">
+    <Card className="fixed bottom-4 right-4 w-full max-w-sm sm:max-w-md md:w-96 h-[500px] sm:h-[550px] md:h-[600px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300 sm:bottom-6 sm:right-6">
       <CardHeader className="pb-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/ai-avatar.png" alt="AI Assistant" />
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <div className="relative flex-shrink-0">
+              <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+                <AvatarImage src="/placeholder-user.jpg" alt="Sarah - AI Support" />
                 <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500">
-                  <Bot className="h-4 w-4" />
+                  <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse" />
+              <div className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white animate-pulse" />
             </div>
-            <div>
-              <CardTitle className="text-sm flex items-center gap-2">
-                AI Assistant
-                <Sparkles className="h-3 w-3" />
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-xs sm:text-sm flex items-center gap-1 sm:gap-2 truncate">
+                <span className="truncate">Sarah - AI Support</span>
+                <Sparkles className="h-3 w-3 flex-shrink-0" />
               </CardTitle>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-xs opacity-90">Online • AI Powered</span>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+                <span className="text-xs opacity-90 truncate">Online • AI Powered</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-white hover:bg-white/20"
+              className="h-7 w-7 sm:h-8 sm:w-8 text-white hover:bg-white/20"
               onClick={() => window.open("tel:+2540112081866", "_self")}
+              aria-label="Call Support"
             >
-              <Phone className="h-4 w-4" />
+              <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20">
-              <Video className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 sm:h-8 sm:w-8 text-white hover:bg-white/20 hidden sm:flex"
+              aria-label="Video Call"
+            >
+              <Video className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20" onClick={() => setIsMinimized(!isMinimized)}>
-              {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 sm:h-8 sm:w-8 text-white hover:bg-white/20" 
+              onClick={() => setIsMinimized(!isMinimized)}
+              aria-label={isMinimized ? "Maximize Chat" : "Minimize Chat"}
+            >
+              {isMinimized ? <Maximize2 className="h-3 w-3 sm:h-4 sm:w-4" /> : <Minimize2 className="h-3 w-3 sm:h-4 sm:w-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20" onClick={onToggle}>
-              <X className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7 sm:h-8 sm:w-8 text-white hover:bg-white/20" 
+              onClick={onToggle}
+              aria-label="Close Chat"
+            >
+              <X className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>
@@ -313,14 +332,14 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
         <>
           {/* Quick Replies */}
           {quickReplies.length > 0 && (
-            <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-              <div className="flex flex-wrap gap-2">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {quickReplies.map((reply, index) => (
                   <Button
                     key={index}
                     variant="outline"
                     size="sm"
-                    className="text-xs h-7 animate-in fade-in-0 slide-in-from-left-2"
+                    className="text-xs h-6 sm:h-7 px-2 sm:px-3 animate-in fade-in-0 slide-in-from-left-2"
                     style={{ animationDelay: `${index * 100}ms` }}
                     onClick={() => handleQuickReply(reply)}
                   >
@@ -333,22 +352,22 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
 
           {/* Suggested Actions */}
           {suggestedActions.length > 0 && (
-            <div className="p-3 bg-gray-50 border-b">
-              <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+            <div className="p-2 sm:p-3 bg-gray-50 border-b">
+              <div className="text-xs text-muted-foreground mb-1 sm:mb-2 flex items-center gap-1">
                 <Zap className="h-3 w-3" />
                 Suggested Actions
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {suggestedActions.map((action, index) => (
                   <Button
                     key={index}
                     variant="ghost"
                     size="sm"
-                    className="text-xs h-6 bg-white hover:bg-blue-50 animate-in fade-in-0 slide-in-from-right-2"
+                    className="text-xs h-5 sm:h-6 px-2 sm:px-3 bg-white hover:bg-blue-50 animate-in fade-in-0 slide-in-from-right-2"
                     style={{ animationDelay: `${index * 100}ms` }}
                     onClick={() => handleSuggestedAction(action)}
                   >
-                    <ArrowUp className="h-3 w-3 mr-1" />
+                    <ArrowUp className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
                     {action}
                   </Button>
                 ))}
@@ -356,18 +375,18 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
             </div>
           )}
 
-          <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+          <CardContent className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4">
             {messages.map((message, index) => (
               <div 
                 key={message.id} 
                 className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} animate-in fade-in-0 slide-in-from-bottom-2`}
               >
-                <div className="flex items-start gap-2 max-w-[80%]">
+                <div className="flex items-start gap-1 sm:gap-2 max-w-[85%] sm:max-w-[80%]">
                   {message.sender !== "user" && (
                     <Avatar className="h-6 w-6 mt-1">
-                      <AvatarImage src={message.sender === "ai" ? "/ai-avatar.png" : "/agent-sarah.jpg"} />
-                      <AvatarFallback className={message.sender === "ai" ? "bg-gradient-to-r from-blue-500 to-purple-500" : "bg-green-500"}>
-                        {message.sender === "ai" ? <Bot className="h-3 w-3" /> : <User className="h-3 w-3" />}
+                      <AvatarImage src="/placeholder-user.jpg" />
+                      <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500">
+                        <Bot className="h-3 w-3" />
                       </AvatarFallback>
                     </Avatar>
                   )}
@@ -382,10 +401,10 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                           : "bg-gray-100"
                       }`}
                     >
-                      {message.sender === "ai" && (
+                      {(message.sender === "ai" || message.sender === "agent") && (
                         <div className="flex items-center gap-1 mb-1">
                           <Sparkles className="h-3 w-3 text-blue-600" />
-                          <span className="text-xs text-blue-600 font-medium">AI Assistant</span>
+                          <span className="text-xs text-blue-600 font-medium">Sarah</span>
                           {message.metadata?.confidence && (
                             <Badge variant="secondary" className="text-xs h-4 px-1">
                               {Math.round(message.metadata.confidence * 100)}%
@@ -394,7 +413,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                         </div>
                       )}
                       
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-xs sm:text-sm whitespace-pre-wrap">{message.content}</p>
                       
                       <div className="flex items-center justify-between mt-2">
                         <p className="text-xs opacity-70">
@@ -441,6 +460,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
               <div className="flex justify-start animate-in fade-in-0">
                 <div className="flex items-start gap-2">
                   <Avatar className="h-6 w-6">
+                    <AvatarImage src="/placeholder-user.jpg" />
                     <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500">
                       <Bot className="h-3 w-3" />
                     </AvatarFallback>
@@ -450,7 +470,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                       {isAIResponding ? (
                         <>
                           <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
-                          <span className="text-xs text-blue-600">AI is thinking...</span>
+                          <span className="text-xs text-blue-600">Sarah is thinking...</span>
                         </>
                       ) : (
                         <>
@@ -459,7 +479,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                             <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.1s]" />
                             <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.2s]" />
                           </div>
-                          <span className="text-xs text-muted-foreground">Typing...</span>
+                          <span className="text-xs text-muted-foreground">Sarah is typing...</span>
                         </>
                       )}
                     </div>
@@ -471,23 +491,23 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
             <div ref={messagesEndRef} />
           </CardContent>
 
-          <div className="p-4 border-t bg-white">
-            <div className="flex items-center gap-2">
+          <div className="p-3 sm:p-4 border-t bg-white">
+            <div className="flex items-center gap-1 sm:gap-2">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8"
+                className="h-7 w-7 sm:h-8 sm:w-8"
                 onClick={isListening ? stopVoiceInput : startVoiceInput}
               >
                 {isListening ? (
-                  <MicOff className="h-4 w-4 text-red-600 animate-pulse" />
+                  <MicOff className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 animate-pulse" />
                 ) : (
-                  <Mic className="h-4 w-4" />
+                  <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
                 )}
               </Button>
               
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Paperclip className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 hidden sm:flex">
+                <Paperclip className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
               
               <Input
@@ -495,31 +515,34 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1"
+                className="flex-1 text-sm sm:text-base h-8 sm:h-10"
                 disabled={isAIResponding}
               />
               
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Smile className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 hidden sm:flex">
+                <Smile className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
               
               <Button 
                 onClick={sendMessage} 
                 size="icon" 
-                className="h-8 w-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="h-7 w-7 sm:h-8 sm:w-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 disabled={!newMessage.trim() || isAIResponding}
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
             
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-muted-foreground">
-                {isListening ? "Listening..." : "AI-powered responses • Typically replies instantly"}
+            <div className="flex items-center justify-between mt-1 sm:mt-2">
+              <p className="text-xs text-muted-foreground hidden sm:block">
+                {isListening ? "Listening..." : "Sarah AI • Instant responses with human escalation"}
+              </p>
+              <p className="text-xs text-muted-foreground sm:hidden">
+                {isListening ? "Listening..." : "Sarah AI"}
               </p>
               <div className="flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-blue-600" />
-                <span className="text-xs text-blue-600 font-medium">AI Enhanced</span>
+                <Sparkles className="h-2 w-2 sm:h-3 sm:w-3 text-blue-600" />
+                <span className="text-xs text-blue-600 font-medium hidden sm:inline">AI Enhanced</span>
               </div>
             </div>
           </div>

@@ -14,6 +14,11 @@ import {
 import { db } from './firebase'
 import { User } from './auth'
 
+// Check if Firebase is properly initialized
+const isFirebaseInitialized = () => {
+  return !!db
+}
+
 export interface UserProfile {
   id: string
   email: string
@@ -55,6 +60,11 @@ export function firebaseUserToUserProfile(firebaseUser: any): UserProfile {
 export const userService = {
   // Create or update user profile in Firestore
   async saveUserProfile(userProfile: Partial<UserProfile>): Promise<void> {
+    if (!isFirebaseInitialized()) {
+      console.warn('Firebase not initialized, skipping user profile save')
+      return
+    }
+    
     try {
       const userRef = doc(db, 'users', userProfile.id!)
       const userDoc = await getDoc(userRef)
@@ -81,6 +91,10 @@ export const userService = {
 
   // Get user profile from Firestore
   async getUserProfile(userId: string): Promise<UserProfile | null> {
+    if (!isFirebaseInitialized()) {
+      return null
+    }
+    
     try {
       const userRef = doc(db, 'users', userId)
       const userDoc = await getDoc(userRef)
@@ -97,6 +111,10 @@ export const userService = {
 
   // Check if user exists by email
   async getUserByEmail(email: string): Promise<UserProfile | null> {
+    if (!isFirebaseInitialized()) {
+      return null
+    }
+    
     try {
       const usersRef = collection(db, 'users')
       const q = query(usersRef, where('email', '==', email))
@@ -115,6 +133,11 @@ export const userService = {
 
   // Update user profile
   async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<void> {
+    if (!isFirebaseInitialized()) {
+      console.warn('Firebase not initialized, skipping user profile update')
+      return
+    }
+    
     try {
       const userRef = doc(db, 'users', userId)
       await updateDoc(userRef, {

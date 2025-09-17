@@ -79,14 +79,24 @@ export default function AccountSettingsPage() {
         const settings = await userSettingsService.getUserSettings(user.id)
         setUserSettings(settings)
         
-        if (settings) {
+        if (settings && settings.profile) {
           setProfileData({
-            name: settings.profile.name,
-            email: settings.profile.email,
+            name: settings.profile.name || "",
+            email: settings.profile.email || "",
             phone: settings.profile.phone || "",
             location: settings.profile.location || "",
             bio: settings.profile.bio || "",
             website: settings.profile.website || "",
+          })
+        } else {
+          // If no settings exist, initialize with user data
+          setProfileData({
+            name: user.name || "",
+            email: user.email || "",
+            phone: "",
+            location: "",
+            bio: "",
+            website: "",
           })
         }
       } catch (error) {
@@ -96,6 +106,18 @@ export default function AccountSettingsPage() {
           description: "Failed to load user settings",
           variant: "destructive"
         })
+        
+        // Fallback to user data if settings loading fails
+        if (user) {
+          setProfileData({
+            name: user.name || "",
+            email: user.email || "",
+            phone: "",
+            location: "",
+            bio: "",
+            website: "",
+          })
+        }
       } finally {
         setIsLoading(false)
       }
@@ -110,6 +132,16 @@ export default function AccountSettingsPage() {
       toast({
         title: "Error",
         description: "You must be logged in to update your profile",
+        variant: "destructive",
+      })
+      return
+    }
+    
+    // Validate required fields
+    if (!profileData.name || !profileData.email) {
+      toast({
+        title: "Validation Error",
+        description: "Name and email are required fields.",
         variant: "destructive",
       })
       return
@@ -133,6 +165,7 @@ export default function AccountSettingsPage() {
       
       setIsEditingProfile(false)
     } catch (error: any) {
+      console.error("Profile update error:", error)
       toast({
         title: "Error updating profile",
         description: error.message || "Please try again or contact support.",
