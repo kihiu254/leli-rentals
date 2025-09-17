@@ -67,8 +67,7 @@ export const bookingsService = {
         q = query(q, where("listingId", "==", filters.listingId))
       }
 
-      // Order by creation date (newest first)
-      q = query(q, orderBy("createdAt", "desc"))
+      // Remove orderBy to avoid index requirement - sort in memory instead
       
       const snapshot = await getDocs(q)
       const bookings: Booking[] = []
@@ -86,7 +85,8 @@ export const bookingsService = {
         } as Booking)
       })
       
-      return bookings
+      // Sort in memory by creation date (newest first)
+      return bookings.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     } catch (error) {
       console.error("Error fetching bookings:", error)
       throw new Error("Failed to fetch bookings")

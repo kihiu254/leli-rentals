@@ -73,8 +73,7 @@ export const listingsService = {
         q = query(q, where("location", "==", filters.location))
       }
 
-      // Order by creation date (newest first)
-      q = query(q, orderBy("createdAt", "desc"))
+      // Remove orderBy to avoid index requirement - sort in memory instead
       
       // Apply pagination
       if (lastDoc) {
@@ -139,8 +138,7 @@ export const listingsService = {
     try {
       const q = query(
         collection(db, "listings"),
-        where("owner.id", "==", userId),
-        orderBy("createdAt", "desc")
+        where("ownerId", "==", userId)
       )
       
       const snapshot = await getDocs(q)
@@ -150,7 +148,8 @@ export const listingsService = {
         listings.push({ id: doc.id, ...doc.data() } as Listing)
       })
       
-      return listings
+      // Sort in memory by creation date (newest first)
+      return listings.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     } catch (error) {
       console.error("Error fetching user listings:", error)
       throw new Error("Failed to fetch user listings")

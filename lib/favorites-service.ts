@@ -46,8 +46,19 @@ export const favoritesService = {
         const data = doc.data()
         favorites.push({ 
           id: doc.id, 
-          ...data,
-          addedDate: data.addedDate.toDate(),
+          userId: data.userId || "",
+          listingId: data.listingId || "",
+          title: data.title || "",
+          description: data.description || "",
+          price: typeof data.price === 'number' ? data.price : 0,
+          category: data.category || "",
+          image: data.image || "/placeholder.svg",
+          location: data.location || "",
+          ownerName: data.ownerName || "",
+          rating: typeof data.rating === 'number' ? data.rating : 0,
+          reviews: typeof data.reviews === 'number' ? data.reviews : 0,
+          isAvailable: data.isAvailable !== undefined ? data.isAvailable : true,
+          addedDate: data.addedDate?.toDate() || new Date(),
           lastViewed: data.lastViewed ? data.lastViewed.toDate() : undefined
         } as Favorite)
       })

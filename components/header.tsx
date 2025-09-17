@@ -143,13 +143,13 @@ export function Header() {
                     className="flex items-center gap-2 px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={auth.user.photoURL || ""} />
+                      <AvatarImage src={auth.user.avatar || ""} />
                       <AvatarFallback className="bg-purple-500 text-white text-sm font-medium">
-                        {auth.user.displayName?.charAt(0) || auth.user.email?.charAt(0) || "U"}
+                        {auth.user.name?.charAt(0) || auth.user.email?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
                     <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {auth.user.displayName || auth.user.email?.split("@")[0] || "User"}
+                      {auth.user.name || auth.user.email?.split("@")[0] || "User"}
                     </span>
                     <ChevronDown className="h-4 w-4 text-gray-500" />
                   </Button>

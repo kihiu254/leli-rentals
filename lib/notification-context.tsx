@@ -25,7 +25,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     // Subscribe to notifications
     const unsubscribeNotifications = notificationService.subscribeToNotifications(
-      user.uid,
+      user.id,
       (newNotifications) => {
         setNotifications(newNotifications)
         setIsLoading(false)
@@ -34,7 +34,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     // Subscribe to unread count
     const unsubscribeUnreadCount = notificationService.subscribeToUnreadCount(
-      user.uid,
+      user.id,
       (count) => {
         setUnreadCount(count)
       }
@@ -67,7 +67,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!user) return
     
     try {
-      await notificationService.markAllAsRead(user.uid)
+      await notificationService.markAllAsRead(user.id)
       // Update local state immediately
       setNotifications(prev => 
         prev.map(notification => ({ ...notification, isRead: true }))
@@ -98,9 +98,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     
     setIsLoading(true)
     try {
-      const newNotifications = await notificationService.getUserNotifications(user.uid)
+      const newNotifications = await notificationService.getUserNotifications(user.id)
       setNotifications(newNotifications)
-      const count = await notificationService.getUnreadCount(user.uid)
+      const count = await notificationService.getUnreadCount(user.id)
       setUnreadCount(count)
     } catch (error) {
       console.error('Error refreshing notifications:', error)

@@ -22,7 +22,7 @@ import {
 import { db, storage } from "./firebase"
 
 export interface UserProfile {
-  uid: string
+  id: string
   name: string
   email: string
   phone?: string
@@ -51,6 +51,7 @@ export interface UserReview {
   reviewerId: string
   reviewerName: string
   reviewerAvatar?: string
+  revieweeId: string
   rating: number
   comment: string
   createdAt: Date
@@ -105,10 +106,10 @@ export interface UserBooking {
 
 export const profileService = {
   // Get user profile
-  async getUserProfile(uid: string): Promise<UserProfile | null> {
+  async getUserProfile(id: string): Promise<UserProfile | null> {
     try {
-      const userRef = doc(db, "userProfiles", uid)
-      const userSnap = await getDocs(query(collection(db, "userProfiles"), where("uid", "==", uid)))
+      const userRef = doc(db, "userProfiles", id)
+      const userSnap = await getDocs(query(collection(db, "userProfiles"), where("id", "==", id)))
       
       if (!userSnap.empty) {
         const userData = userSnap.docs[0].data()
@@ -129,16 +130,16 @@ export const profileService = {
   },
 
   // Update user profile
-  async updateUserProfile(uid: string, profileData: Partial<UserProfile>): Promise<void> {
+  async updateUserProfile(id: string, profileData: Partial<UserProfile>): Promise<void> {
     try {
-      const userRef = doc(db, "userProfiles", uid)
+      const userRef = doc(db, "userProfiles", id)
       
       // Check if document exists first
       const docSnap = await getDoc(userRef)
       if (!docSnap.exists()) {
         // Create the document if it doesn't exist
         await setDoc(userRef, {
-          uid,
+          id,
           ...profileData,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
@@ -167,7 +168,7 @@ export const profileService = {
   },
 
   // Upload profile image with retry logic and fallback
-  async uploadProfileImage(uid: string, file: File): Promise<string> {
+  async uploadProfileImage(id: string, file: File): Promise<string> {
     const maxRetries = 3
     let lastError: any
 
@@ -175,7 +176,7 @@ export const profileService = {
       try {
         // Delete old image if exists (only on first attempt)
         if (attempt === 1) {
-          const oldImageRef = ref(storage, `profile-images/${uid}`)
+          const oldImageRef = ref(storage, `profile-images/${id}`)
           try {
             await deleteObject(oldImageRef)
           } catch (error) {
@@ -187,11 +188,11 @@ export const profileService = {
         // Upload new image with unique filename
         const timestamp = Date.now()
         const fileExtension = file.name.split('.').pop() || 'jpg'
-        const imageRef = ref(storage, `profile-images/${uid}-${timestamp}.${fileExtension}`)
+        const imageRef = ref(storage, `profile-images/${id}-${timestamp}.${fileExtension}`)
         
         const snapshot = await uploadBytes(imageRef, file, {
           customMetadata: {
-            uploadedBy: uid,
+            uploadedBy: id,
             uploadedAt: new Date().toISOString()
           }
         })
@@ -199,7 +200,7 @@ export const profileService = {
         const downloadURL = await getDownloadURL(snapshot.ref)
         
         // Update profile with new image URL
-        await this.updateUserProfile(uid, { avatar: downloadURL })
+        await this.updateUserProfile(id, { avatar: downloadURL })
         
         return downloadURL
       } catch (error: any) {
@@ -236,22 +237,22 @@ export const profileService = {
     
     // Fallback: Use base64 encoding and store in Firestore
     try {
-      console.log("Attempting fallback: storing image as base64...")
-      const base64Image = await this.fileToBase64(file)
-      await this.updateUserProfile(uid, { avatar: base64Image })
-      return base64Image
+      console.log("Attempting fallback: storing image as base64...");
+      const base64Image = await this.fileToBase64(file);
+      await this.updateUserProfile(id, { avatar: base64Image });
+      return base64Image;
     } catch (fallbackError) {
-      console.error("Fallback also failed:", fallbackError)
-      throw new Error(`Failed to upload image after ${maxRetries} attempts and fallback failed: ${lastError.message}`)
+      console.error("Fallback also failed:", fallbackError);
+      throw new Error(`Failed to upload image after ${maxRetries} attempts and fallback failed: ${lastError?.message || (fallbackError as Error)?.message || 'Unknown error'}`);
     }
   },
 
   // Get user reviews
-  async getUserReviews(uid: string): Promise<UserReview[]> {
+  async getUserReviews(id: string): Promise<UserReview[]> {
     try {
       const reviewsQuery = query(
         collection(db, "userReviews"),
-        where("revieweeId", "==", uid),
+        where("revieweeId", "==", id),
         limit(50)
       )
       const querySnapshot = await getDocs(reviewsQuery)
@@ -278,7 +279,7 @@ export const profileService = {
       })
 
       // Update user's average rating
-      await this.updateUserRating(review.revieweeId || '')
+      await this.updateUserRating(review.revieweeId)
     } catch (error) {
       console.error("Error adding user review:", error)
       throw new Error("Failed to add review")
@@ -286,11 +287,11 @@ export const profileService = {
   },
 
   // Update user rating
-  async updateUserRating(uid: string): Promise<void> {
+  async updateUserRating(id: string): Promise<void> {
     try {
       const reviewsQuery = query(
         collection(db, "userReviews"),
-        where("revieweeId", "==", uid)
+        where("revieweeId", "==", id)
       )
       const querySnapshot = await getDocs(reviewsQuery)
       
@@ -298,7 +299,7 @@ export const profileService = {
       const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0)
       const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0
       
-      await this.updateUserProfile(uid, {
+      await this.updateUserProfile(id, {
         rating: {
           average: Math.round(averageRating * 10) / 10,
           count: reviews.length
@@ -310,11 +311,11 @@ export const profileService = {
   },
 
   // Get user listings
-  async getUserListings(uid: string): Promise<UserListing[]> {
+  async getUserListings(id: string): Promise<UserListing[]> {
     try {
       const listingsQuery = query(
         collection(db, "listings"),
-        where("ownerId", "==", uid)
+        where("ownerId", "==", id)
       )
       const querySnapshot = await getDocs(listingsQuery)
       
@@ -337,11 +338,11 @@ export const profileService = {
   },
 
   // Get user bookings
-  async getUserBookings(uid: string): Promise<UserBooking[]> {
+  async getUserBookings(id: string): Promise<UserBooking[]> {
     try {
       const bookingsQuery = query(
         collection(db, "bookings"),
-        where("userId", "==", uid)
+        where("userId", "==", id)
       )
       const querySnapshot = await getDocs(bookingsQuery)
       
@@ -362,11 +363,11 @@ export const profileService = {
   },
 
   // Update user stats
-  async updateUserStats(uid: string): Promise<void> {
+  async updateUserStats(id: string): Promise<void> {
     try {
       const [listings, bookings] = await Promise.all([
-        this.getUserListings(uid),
-        this.getUserBookings(uid)
+        this.getUserListings(id),
+        this.getUserBookings(id)
       ])
 
       const totalEarnings = bookings
@@ -378,7 +379,7 @@ export const profileService = {
       const responseRate = totalBookings > 0 ? 
         (bookings.filter(b => b.status !== 'pending').length / totalBookings) * 100 : 0
 
-      await this.updateUserProfile(uid, {
+      await this.updateUserProfile(id, {
         stats: {
           totalListings,
           totalBookings,
@@ -407,10 +408,9 @@ export const profileService = {
   },
 
   // Create default profile
-  async createDefaultProfile(uid: string, name: string, email: string): Promise<void> {
+  async createDefaultProfile(id: string, name: string, email: string): Promise<void> {
     try {
       const defaultProfile: Omit<UserProfile, 'id'> = {
-        uid,
         name,
         email,
         createdAt: new Date(),
@@ -421,7 +421,7 @@ export const profileService = {
         stats: { totalListings: 0, totalBookings: 0, totalEarnings: 0, responseRate: 0 }
       }
 
-      await addDoc(collection(db, "userProfiles"), {
+      await setDoc(doc(db, "userProfiles", id), {
         ...defaultProfile,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()

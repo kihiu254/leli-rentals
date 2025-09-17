@@ -97,6 +97,8 @@ export default function FavoritesPage() {
     if (!user) return
     
     try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
       await favoritesService.removeFromFavorites(user.id, listingId)
       
       // Update local state
@@ -253,7 +255,7 @@ export default function FavoritesPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-blue-600">
-                    ${favorites.length > 0 ? Math.round(favorites.reduce((sum, f) => sum + f.price, 0) / favorites.length) : 0}
+                    ${favorites.length > 0 ? Math.round(favorites.reduce((sum, f) => sum + (f.price || 0), 0) / favorites.length) : 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Avg. Price</div>
                 </div>
@@ -269,7 +271,7 @@ export default function FavoritesPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-purple-600">
-                    {favorites.length > 0 ? (Math.round(favorites.reduce((sum, f) => sum + f.rating, 0) / favorites.length * 10) / 10) : 0}
+                    {favorites.length > 0 ? (Math.round(favorites.reduce((sum, f) => sum + (f.rating || 0), 0) / favorites.length * 10) / 10) : 0}
                   </div>
                   <div className="text-sm text-muted-foreground">Avg. Rating</div>
                 </div>
@@ -292,7 +294,7 @@ export default function FavoritesPage() {
                     className="pl-10"
                   />
                 </div>
-              </div>
+          </div>
               <div className="flex gap-3">
                 <select
                   value={categoryFilter}
@@ -317,11 +319,11 @@ export default function FavoritesPage() {
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Highest Rated</option>
                 </select>
-                <Button variant="outline">
-                  <Filter className="h-4 w-4 mr-2" />
+          <Button variant="outline">
+            <Filter className="h-4 w-4 mr-2" />
                   More Filters
-                </Button>
-              </div>
+          </Button>
+        </div>
             </div>
           </CardContent>
         </Card>
@@ -383,7 +385,7 @@ export default function FavoritesPage() {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
                   <span>Added {new Date(favorite.addedDate).toLocaleDateString()}</span>
                   <span>•</span>
-                  <span>Last viewed {new Date(favorite.lastViewed).toLocaleDateString()}</span>
+                  <span>Last viewed {favorite.lastViewed ? new Date(favorite.lastViewed).toLocaleDateString() : 'Never'}</span>
                 </div>
 
                 <div className="flex gap-2">

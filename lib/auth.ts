@@ -27,6 +27,7 @@ export interface AuthState {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
+  signOut: () => Promise<void>
 }
 
 // Convert Firebase User to our User interface
@@ -180,5 +181,6 @@ export function useAuth(): AuthState {
     user,
     isLoading,
     isAuthenticated: !!user,
+    signOut: authAPI.signOut,
   }
 }

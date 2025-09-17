@@ -257,12 +257,11 @@ export const aiSupportService = {
     try {
       const q = query(
         collection(db, 'supportTickets'),
-        where('userId', '==', userId),
-        orderBy('updatedAt', 'desc')
+        where('userId', '==', userId)
       )
       const querySnapshot = await getDocs(q)
       
-      return querySnapshot.docs.map(doc => ({
+      const tickets = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate() || new Date(),
@@ -272,6 +271,9 @@ export const aiSupportService = {
           timestamp: msg.timestamp?.toDate() || new Date()
         })) || []
       })) as SupportTicket[]
+      
+      // Sort in memory by updatedAt descending
+      return tickets.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     } catch (error) {
       console.error('Error getting user tickets:', error)
       return []
@@ -283,12 +285,11 @@ export const aiSupportService = {
     try {
       const q = query(
         collection(db, 'supportTickets'),
-        orderBy('updatedAt', 'desc'),
         limit(100)
       )
       const querySnapshot = await getDocs(q)
       
-      return querySnapshot.docs.map(doc => ({
+      const tickets = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate() || new Date(),
@@ -298,6 +299,9 @@ export const aiSupportService = {
           timestamp: msg.timestamp?.toDate() || new Date()
         })) || []
       })) as SupportTicket[]
+      
+      // Sort in memory by updatedAt descending
+      return tickets.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     } catch (error) {
       console.error('Error getting all tickets:', error)
       return []

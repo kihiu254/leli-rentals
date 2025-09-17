@@ -3,6 +3,7 @@ import {
   getDoc, 
   setDoc, 
   updateDoc,
+  deleteDoc,
   collection,
   query,
   where,
@@ -91,8 +92,20 @@ export const userSettingsService = {
   // Update profile information
   async updateProfile(uid: string, profileData: Partial<UserSettings['profile']>): Promise<void> {
     try {
+      const existingSettings = await this.getUserSettings(uid)
+      const mergedProfile = {
+        name: existingSettings?.profile.name || "",
+        email: existingSettings?.profile.email || "",
+        phone: "",
+        location: "",
+        bio: "",
+        website: "",
+        avatar: "",
+        ...existingSettings?.profile,
+        ...profileData
+      }
       await this.saveUserSettings(uid, {
-        profile: profileData
+        profile: mergedProfile
       })
     } catch (error) {
       console.error("Error updating profile:", error)
@@ -103,8 +116,20 @@ export const userSettingsService = {
   // Update notification settings
   async updateNotificationSettings(uid: string, notificationSettings: Partial<UserSettings['notifications']>): Promise<void> {
     try {
+      const existingSettings = await this.getUserSettings(uid)
+      const mergedNotifications = {
+        emailNotifications: true,
+        smsNotifications: false,
+        pushNotifications: true,
+        marketingEmails: false,
+        bookingUpdates: true,
+        paymentReminders: true,
+        securityAlerts: true,
+        ...existingSettings?.notifications,
+        ...notificationSettings
+      }
       await this.saveUserSettings(uid, {
-        notifications: notificationSettings
+        notifications: mergedNotifications
       })
     } catch (error) {
       console.error("Error updating notification settings:", error)
@@ -115,8 +140,19 @@ export const userSettingsService = {
   // Update privacy settings
   async updatePrivacySettings(uid: string, privacySettings: Partial<UserSettings['privacy']>): Promise<void> {
     try {
+      const existingSettings = await this.getUserSettings(uid)
+      const mergedPrivacy = {
+        profileVisibility: "public" as const,
+        showEmail: false,
+        showPhone: false,
+        showLocation: true,
+        allowMessages: true,
+        showOnlineStatus: true,
+        ...existingSettings?.privacy,
+        ...privacySettings
+      }
       await this.saveUserSettings(uid, {
-        privacy: privacySettings
+        privacy: mergedPrivacy
       })
     } catch (error) {
       console.error("Error updating privacy settings:", error)
@@ -140,10 +176,15 @@ export const userSettingsService = {
       await updatePassword(user, newPassword)
 
       // Update last password change in settings
+      const existingSettings = await this.getUserSettings(user.uid)
+      const mergedSecurity = {
+        twoFactorEnabled: false,
+        emailVerified: user.emailVerified || false,
+        ...existingSettings?.security,
+        lastPasswordChange: new Date()
+      }
       await this.saveUserSettings(user.uid, {
-        security: {
-          lastPasswordChange: new Date()
-        }
+        security: mergedSecurity
       })
     } catch (error: any) {
       console.error("Error changing password:", error)
@@ -171,10 +212,14 @@ export const userSettingsService = {
       await sendEmailVerification(user)
       
       // Update email verification status
+      const existingSettings = await this.getUserSettings(user.uid)
+      const mergedSecurity = {
+        twoFactorEnabled: false,
+        emailVerified: user.emailVerified,
+        ...existingSettings?.security
+      }
       await this.saveUserSettings(user.uid, {
-        security: {
-          emailVerified: user.emailVerified
-        }
+        security: mergedSecurity
       })
     } catch (error) {
       console.error("Error sending email verification:", error)
@@ -190,10 +235,14 @@ export const userSettingsService = {
         throw new Error("No authenticated user found")
       }
 
+      const existingSettings = await this.getUserSettings(user.uid)
+      const mergedSecurity = {
+        twoFactorEnabled: enabled,
+        emailVerified: false,
+        ...existingSettings?.security
+      }
       await this.saveUserSettings(user.uid, {
-        security: {
-          twoFactorEnabled: enabled
-        }
+        security: mergedSecurity
       })
     } catch (error) {
       console.error("Error updating two-factor authentication:", error)
@@ -236,28 +285,28 @@ export const userSettingsService = {
     try {
       // Delete user settings
       const settingsRef = doc(db, "userSettings", uid)
-      await setDoc(settingsRef, {}, { merge: false })
+      await deleteDoc(settingsRef)
 
       // Delete user profile
-      const profileRef = doc(db, "users", uid)
-      await setDoc(profileRef, {}, { merge: false })
+      const profileRef = doc(db, "userProfiles", uid)
+      await deleteDoc(profileRef)
 
       // Delete user listings
-      const listingsQuery = query(collection(db, "listings"), where("owner.id", "==", uid))
+      const listingsQuery = query(collection(db, "listings"), where("ownerId", "==", uid))
       const listingsSnapshot = await getDocs(listingsQuery)
-      const deletePromises = listingsSnapshot.docs.map(doc => doc.ref.delete())
+      const deletePromises = listingsSnapshot.docs.map(doc => deleteDoc(doc.ref))
       await Promise.all(deletePromises)
 
       // Delete user bookings
       const bookingsQuery = query(collection(db, "bookings"), where("userId", "==", uid))
       const bookingsSnapshot = await getDocs(bookingsQuery)
-      const deleteBookingPromises = bookingsSnapshot.docs.map(doc => doc.ref.delete())
+      const deleteBookingPromises = bookingsSnapshot.docs.map(doc => deleteDoc(doc.ref))
       await Promise.all(deleteBookingPromises)
 
       // Delete user favorites
       const favoritesQuery = query(collection(db, "favorites"), where("userId", "==", uid))
       const favoritesSnapshot = await getDocs(favoritesQuery)
-      const deleteFavoritesPromises = favoritesSnapshot.docs.map(doc => doc.ref.delete())
+      const deleteFavoritesPromises = favoritesSnapshot.docs.map(doc => deleteDoc(doc.ref))
       await Promise.all(deleteFavoritesPromises)
     } catch (error) {
       console.error("Error deleting user data:", error)
