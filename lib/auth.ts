@@ -15,7 +15,19 @@ import { auth, googleProvider } from './firebase'
 
 // Check if Firebase is properly initialized
 const isFirebaseInitialized = () => {
-  return auth && googleProvider
+  const isValid = auth && googleProvider
+  if (!isValid) {
+    console.error('Firebase not properly initialized. Check your environment variables.')
+    console.error('Required variables:', {
+      NEXT_PUBLIC_FIREBASE_API_KEY: !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: !!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: !!process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: !!process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+      NEXT_PUBLIC_FIREBASE_APP_ID: !!process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    })
+  }
+  return isValid
 }
 import { userService, firebaseUserToUserProfile } from './user-service'
 
@@ -68,6 +80,12 @@ export const authAPI = {
       return user
     } catch (error: any) {
       console.error('Email sign-in error:', error)
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        email: email,
+        firebaseInitialized: isFirebaseInitialized()
+      })
       
       if (error.code === 'auth/user-not-found') {
         throw new Error('No account found with this email address.')
@@ -79,6 +97,10 @@ export const authAPI = {
         throw new Error('Invalid email address.')
       } else if (error.code === 'auth/too-many-requests') {
         throw new Error('Too many failed attempts. Please try again later.')
+      } else if (error.code === 'auth/network-request-failed') {
+        throw new Error('Network error. Please check your internet connection.')
+      } else if (error.code === 'auth/invalid-api-key') {
+        throw new Error('Firebase configuration error. Please contact support.')
       }
       
       throw new Error(error.message || 'Sign-in failed. Please try again.')

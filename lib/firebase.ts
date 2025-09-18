@@ -15,7 +15,7 @@ const requiredEnvVars = {
 
 // Check for missing environment variables
 const missingVars = Object.entries(requiredEnvVars)
-  .filter(([_, value]) => !value || value === 'your_api_key_here' || value === 'your_project_id')
+  .filter(([_, value]) => !value || value === 'your_api_key_here' || value === 'your_project_id' || value === 'your_messaging_sender_id_here' || value === 'your_app_id_here')
   .map(([key]) => key);
 
 // Only log missing variables in development, not during build
@@ -31,7 +31,7 @@ if (missingVars.length > 0 && process.env.NODE_ENV === 'development') {
 
 // Check if we have valid Firebase configuration
 const hasValidConfig = Object.values(requiredEnvVars).every(
-  value => value && value !== 'your_api_key_here' && value !== 'your_project_id'
+  value => value && value !== 'your_api_key_here' && value !== 'your_project_id' && value !== 'your_messaging_sender_id_here' && value !== 'your_app_id_here'
 );
 
 // Initialize Firebase only if we have valid configuration
@@ -62,8 +62,19 @@ if (hasValidConfig) {
     googleProvider.setCustomParameters({
       prompt: 'select_account'
     });
+
+    console.log('✅ Firebase initialized successfully');
   } catch (error) {
-    console.error('Firebase initialization error:', error);
+    console.error('❌ Firebase initialization error:', error);
+    console.error('Configuration used:', {
+      apiKey: firebaseConfig.apiKey ? 'Set' : 'Missing',
+      authDomain: firebaseConfig.authDomain ? 'Set' : 'Missing',
+      projectId: firebaseConfig.projectId ? 'Set' : 'Missing',
+      storageBucket: firebaseConfig.storageBucket ? 'Set' : 'Missing',
+      messagingSenderId: firebaseConfig.messagingSenderId ? 'Set' : 'Missing',
+      appId: firebaseConfig.appId ? 'Set' : 'Missing',
+    });
+    
     // Don't throw error during build, just log it
     if (process.env.NODE_ENV !== 'production') {
       console.warn('Firebase initialization failed, but continuing build...');
