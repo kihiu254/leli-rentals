@@ -223,7 +223,7 @@ export default function ListingsPage() {
     await trackView(listingId, { source: 'listing_card' })
     
     // Navigate to details page
-    router.push(`/listings/${listingId}`)
+    router.push(`/listings/details/${listingId}`)
   }
 
 

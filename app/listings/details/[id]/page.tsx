@@ -22,7 +22,20 @@ import {
   ArrowLeft,
   CheckCircle,
   Users,
-  Clock
+  Clock,
+  Shield,
+  Award,
+  MessageCircle,
+  Phone,
+  Mail,
+  Eye,
+  ThumbsUp,
+  ThumbsDown,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  Download,
+  Print
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -33,8 +46,6 @@ import { useInteractions } from "@/lib/hooks/use-interactions"
 import { useToast } from "@/hooks/use-toast"
 import { bookingsService } from "@/lib/bookings-service"
 
-// Mock listings are imported from lib/mock-listings-data.ts
-
 export default function ListingDetailsPage() {
   const { id } = useParams()
   const router = useRouter()
@@ -44,6 +55,9 @@ export default function ListingDetailsPage() {
   const [listing, setListing] = useState<Listing | null>(null)
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [relatedListings, setRelatedListings] = useState<Listing[]>([])
 
   useEffect(() => {
     setMounted(true)
@@ -53,6 +67,12 @@ export default function ListingDetailsPage() {
       setListing(foundListing)
       // Track view
       trackView(foundListing.id, { source: 'listing_details' })
+      
+      // Find related listings (same category, different items)
+      const related = mockListings
+        .filter(l => l.category === foundListing.category && l.id !== foundListing.id)
+        .slice(0, 4)
+      setRelatedListings(related)
     }
     setLoading(false)
   }, [id, trackView])
@@ -194,6 +214,18 @@ export default function ListingDetailsPage() {
     }
   }
 
+  const nextImage = () => {
+    if (listing?.images) {
+      setCurrentImageIndex((prev) => (prev + 1) % listing.images.length)
+    }
+  }
+
+  const prevImage = () => {
+    if (listing?.images) {
+      setCurrentImageIndex((prev) => (prev - 1 + listing.images.length) % listing.images.length)
+    }
+  }
+
   if (!mounted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -249,6 +281,25 @@ export default function ListingDetailsPage() {
       <Header />
 
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-6 sm:py-8">
+        {/* Breadcrumb Navigation */}
+        <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
+          <button 
+            onClick={() => router.push('/listings')}
+            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          >
+            Listings
+          </button>
+          <span>/</span>
+          <button 
+            onClick={() => router.push(`/listings/${listing.category}`)}
+            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors capitalize"
+          >
+            {listing.category}
+          </button>
+          <span>/</span>
+          <span className="text-gray-900 dark:text-gray-100">{listing.title}</span>
+        </nav>
+
         {/* Back Button */}
         <Button 
           variant="ghost" 
@@ -262,13 +313,14 @@ export default function ListingDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Image */}
+            {/* Image Gallery */}
             <Card className="overflow-hidden card-animate">
-              <div className="aspect-video relative">
+              <div className="aspect-video relative group">
                 <img
-                  src={listing.image}
+                  src={listing.images?.[currentImageIndex] || listing.image}
                   alt={listing.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover cursor-pointer"
+                  onClick={() => setShowImageModal(true)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 
@@ -281,6 +333,28 @@ export default function ListingDetailsPage() {
                     </span>
                   </div>
                 </div>
+
+                {/* Image Navigation */}
+                {listing.images && listing.images.length > 1 && (
+                  <>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </Button>
+                  </>
+                )}
 
                 {/* Action Buttons */}
                 <div className="absolute top-4 right-4 flex gap-2">
@@ -303,6 +377,14 @@ export default function ListingDetailsPage() {
                   >
                     <Share2 className="h-5 w-5" />
                   </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setShowImageModal(true)}
+                    className="h-10 w-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800"
+                  >
+                    <Maximize2 className="h-5 w-5" />
+                  </Button>
                 </div>
 
                 {/* Price */}
@@ -313,10 +395,46 @@ export default function ListingDetailsPage() {
                     </span>
                   </div>
                 </div>
+
+                {/* Image Counter */}
+                {listing.images && listing.images.length > 1 && (
+                  <div className="absolute bottom-4 right-4">
+                    <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-3 py-1">
+                      <span className="text-sm text-gray-800 dark:text-gray-200">
+                        {currentImageIndex + 1} / {listing.images.length}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {/* Thumbnail Navigation */}
+              {listing.images && listing.images.length > 1 && (
+                <div className="p-4 bg-gray-50 dark:bg-gray-800">
+                  <div className="flex gap-2 overflow-x-auto">
+                    {listing.images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                          index === currentImageIndex 
+                            ? 'border-blue-500' 
+                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                        }`}
+                      >
+                        <img
+                          src={image}
+                          alt={`${listing.title} ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </Card>
 
-            {/* Details */}
+            {/* Product Details */}
             <Card className="card-animate">
               <CardContent className="p-6">
                 <div className="space-y-6">
@@ -333,6 +451,10 @@ export default function ListingDetailsPage() {
                         <Star className="h-4 w-4 text-yellow-400 fill-current" />
                         <span>{listing.rating} ({listing.reviews} reviews)</span>
                       </div>
+                      <div className="flex items-center gap-1">
+                        <Eye className="h-4 w-4" />
+                        <span>{Math.floor(Math.random() * 1000) + 100} views</span>
+                      </div>
                     </div>
                   </div>
 
@@ -346,7 +468,7 @@ export default function ListingDetailsPage() {
 
                   {/* Amenities */}
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Amenities</h2>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">What's Included</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {listing.amenities.map((amenity, index) => (
                         <div key={index} className="flex items-center gap-2">
@@ -359,31 +481,118 @@ export default function ListingDetailsPage() {
 
                   {/* Owner Info */}
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Owner</h2>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Meet Your Host</h2>
                     <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <Avatar className="h-12 w-12">
+                      <Avatar className="h-16 w-16">
                         <AvatarImage src={listing.owner.avatar} alt={listing.owner.name} />
-                        <AvatarFallback>{listing.owner.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="text-lg">{listing.owner.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900 dark:text-gray-100">{listing.owner.name}</h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{listing.owner.name}</h3>
                           {listing.owner.verified && (
                             <Badge variant="secondary" className="text-xs">
+                              <Shield className="h-3 w-3 mr-1" />
                               Verified
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 mb-2">
                           <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span>{listing.owner.rating} Owner Rating</span>
+                          <span>{listing.owner.rating} Host Rating</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline">
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            Message
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Phone className="h-4 w-4 mr-1" />
+                            Call
+                          </Button>
                         </div>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Reviews Section */}
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Reviews</h2>
+                    <div className="space-y-4">
+                      {/* Mock Reviews */}
+                      {[
+                        { name: "Sarah M.", rating: 5, comment: "Excellent service! The item was exactly as described and the owner was very helpful.", date: "2 days ago" },
+                        { name: "John K.", rating: 4, comment: "Great experience overall. Would definitely rent again.", date: "1 week ago" },
+                        { name: "Mary W.", rating: 5, comment: "Perfect condition and fast response from the owner. Highly recommended!", date: "2 weeks ago" }
+                      ].map((review, index) => (
+                        <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback>{review.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium text-gray-900 dark:text-gray-100">{review.name}</div>
+                              <div className="flex items-center gap-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`h-3 w-3 ${
+                                      i < review.rating
+                                        ? "text-yellow-400 fill-current"
+                                        : "text-gray-300 dark:text-gray-600"
+                                    }`}
+                                  />
+                                ))}
+                                <span className="text-xs text-gray-500 ml-1">{review.date}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{review.comment}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Related Listings */}
+            {relatedListings.length > 0 && (
+              <Card className="card-animate">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">More from this category</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {relatedListings.map((relatedListing) => (
+                      <div
+                        key={relatedListing.id}
+                        className="group cursor-pointer"
+                        onClick={() => router.push(`/listings/details/${relatedListing.id}`)}
+                      >
+                        <div className="aspect-video relative overflow-hidden rounded-lg mb-2">
+                          <img
+                            src={relatedListing.image}
+                            alt={relatedListing.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          <div className="absolute bottom-2 left-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded px-2 py-1">
+                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              KSh {relatedListing.price.toLocaleString()}/day
+                            </span>
+                          </div>
+                        </div>
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {relatedListing.title}
+                        </h3>
+                        <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+                          <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                          <span>{relatedListing.rating}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Booking Sidebar */}
@@ -441,6 +650,28 @@ export default function ListingDetailsPage() {
                         <Clock className="h-4 w-4 text-purple-500" />
                         <span>Instant confirmation</span>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-orange-500" />
+                        <span>Secure payment</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Quick Actions</h3>
+                    <div className="space-y-2">
+                      <Button variant="outline" size="sm" className="w-full justify-start">
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Details
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-full justify-start">
+                        <Print className="h-4 w-4 mr-2" />
+                        Print Listing
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-full justify-start">
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share Listing
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -449,6 +680,47 @@ export default function ListingDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+          <div className="relative max-w-4xl max-h-full">
+            <img
+              src={listing.images?.[currentImageIndex] || listing.image}
+              alt={listing.title}
+              className="max-w-full max-h-full object-contain"
+            />
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-4 right-4 h-10 w-10 bg-white/90 hover:bg-white text-gray-900"
+            >
+              ×
+            </Button>
+            {listing.images && listing.images.length > 1 && (
+              <>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={prevImage}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/90 hover:bg-white text-gray-900"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={nextImage}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/90 hover:bg-white text-gray-900"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
