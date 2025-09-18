@@ -27,281 +27,15 @@ import {
   Calendar
 } from "lucide-react"
 import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Listing } from "@/lib/listings-service"
+import { mockListings } from "@/lib/mock-listings-data"
 import { useAuthContext } from "@/components/auth-provider"
 import { useInteractions } from "@/lib/hooks/use-interactions"
 import { useToast } from "@/hooks/use-toast"
 import { bookingsService } from "@/lib/bookings-service"
 
-// 7 specified categories with comprehensive listings
-const mockListings: Listing[] = [
-  // 1. VEHICLES - cars, motorbikes, trucks, boda bodas
-  {
-    id: "1",
-    title: "Luxury BMW X5 SUV",
-    description: "Premium SUV perfect for family trips and business travel",
-    price: 15000,
-    location: "Nairobi, Kenya",
-    rating: 4.8,
-    reviews: 127,
-    image: "/images/Luxury Sports Car.jpg",
-    amenities: ["GPS Navigation", "Bluetooth", "Air Conditioning", "Leather Seats"],
-    available: true,
-    category: "vehicles",
-    owner: { id: "owner1", name: "John Mwangi", avatar: "/placeholder-user.jpg", rating: 4.9, verified: true },
-    images: ["/images/Luxury Sports Car.jpg"],
-    fullDescription: "Experience luxury and comfort with our premium BMW X5. Perfect for business meetings, family trips, or special occasions.",
-    createdAt: new Date("2024-01-15"),
-    updatedAt: new Date("2024-01-15")
-  },
-  {
-    id: "2",
-    title: "Honda CB650R Motorbike",
-    description: "Sporty motorcycle perfect for city commuting and weekend rides",
-    price: 8000,
-    location: "Nairobi, Kenya",
-    rating: 4.6,
-    reviews: 78,
-    image: "/luxury-cars-in-modern-showroom.jpg",
-    amenities: ["Helmet", "Insurance", "Maintenance Kit", "GPS Tracker"],
-    available: true,
-    category: "vehicles",
-    owner: { id: "owner2", name: "Kevin Otieno", avatar: "/placeholder-user.jpg", rating: 4.7, verified: true },
-    images: ["/luxury-cars-in-modern-showroom.jpg"],
-    fullDescription: "Modern sporty motorcycle perfect for city commuting and weekend adventures. Includes helmet and insurance coverage.",
-    createdAt: new Date("2024-01-08"),
-    updatedAt: new Date("2024-01-08")
-  },
-
-  // 2. HOMES & APARTMENTS - holiday homes, apartments, rooms, office spaces
-  {
-    id: "3",
-    title: "Modern 2-Bedroom Apartment",
-    description: "Stylish apartment in Westlands with city views",
-    price: 25000,
-    location: "Westlands, Nairobi",
-    rating: 4.7,
-    reviews: 89,
-    image: "/modern-apartment-city-view.png",
-    amenities: ["WiFi", "Parking", "Balcony", "Security"],
-    available: true,
-    category: "homes",
-    owner: { id: "owner3", name: "Sarah Kimani", avatar: "/placeholder-user.jpg", rating: 4.8, verified: true },
-    images: ["/modern-apartment-city-view.png"],
-    fullDescription: "Beautiful modern apartment in the heart of Westlands. Fully furnished with modern amenities and stunning city views.",
-    createdAt: new Date("2024-01-10"),
-    updatedAt: new Date("2024-01-10")
-  },
-  {
-    id: "4",
-    title: "Luxury Holiday Villa in Karen",
-    description: "Spacious 4-bedroom villa with garden and pool",
-    price: 45000,
-    location: "Karen, Nairobi",
-    rating: 4.9,
-    reviews: 67,
-    image: "/modern-apartment-city-view.png",
-    amenities: ["Swimming Pool", "Garden", "Maid Service", "Security"],
-    available: true,
-    category: "homes",
-    owner: { id: "owner4", name: "David Ochieng", avatar: "/placeholder-user.jpg", rating: 4.9, verified: true },
-    images: ["/modern-apartment-city-view.png"],
-    fullDescription: "Exclusive holiday villa in Karen with private pool, landscaped garden, and full staff.",
-    createdAt: new Date("2024-01-05"),
-    updatedAt: new Date("2024-01-05")
-  },
-
-  // 3. EQUIPMENT & TOOLS - construction tools, cameras, sound systems
-  {
-    id: "5",
-    title: "Professional Camera Kit",
-    description: "Complete photography setup for events and portraits",
-    price: 8000,
-    location: "Nairobi, Kenya",
-    rating: 4.9,
-    reviews: 156,
-    image: "/images/Vintage Camera Collection.jpg",
-    amenities: ["Multiple Lenses", "Tripod", "Memory Cards", "Case"],
-    available: true,
-    category: "equipment",
-    owner: { id: "owner5", name: "Peter Kamau", avatar: "/placeholder-user.jpg", rating: 4.9, verified: true },
-    images: ["/images/Vintage Camera Collection.jpg"],
-    fullDescription: "Professional camera kit perfect for weddings, events, and commercial photography.",
-    createdAt: new Date("2024-01-08"),
-    updatedAt: new Date("2024-01-08")
-  },
-  {
-    id: "6",
-    title: "Construction Tools Package",
-    description: "Complete set of construction tools and equipment",
-    price: 15000,
-    location: "Nairobi, Kenya",
-    rating: 4.6,
-    reviews: 43,
-    image: "/professional-construction-and-industrial-equipment.jpg",
-    amenities: ["Power Tools", "Hand Tools", "Safety Gear", "Toolbox"],
-    available: true,
-    category: "equipment",
-    owner: { id: "owner6", name: "James Mutua", avatar: "/placeholder-user.jpg", rating: 4.7, verified: true },
-    images: ["/professional-construction-and-industrial-equipment.jpg"],
-    fullDescription: "Complete construction tools package including power tools, hand tools, and safety equipment.",
-    createdAt: new Date("2024-01-06"),
-    updatedAt: new Date("2024-01-06")
-  },
-
-  // 4. EVENT SPACES & VENUES - halls, conference centers, outdoor spaces
-  {
-    id: "7",
-    title: "Elegant Wedding Hall",
-    description: "Beautiful event space with professional audio setup",
-    price: 35000,
-    location: "Karen, Nairobi",
-    rating: 4.9,
-    reviews: 201,
-    image: "/elegant-event-venue-with-chandeliers-and-tables.jpg",
-    amenities: ["Sound System", "Lighting", "Tables", "Chairs"],
-    available: true,
-    category: "events",
-    owner: { id: "owner7", name: "Peter Kamau", avatar: "/placeholder-user.jpg", rating: 4.9, verified: true },
-    images: ["/elegant-event-venue-with-chandeliers-and-tables.jpg"],
-    fullDescription: "Elegant wedding hall perfect for weddings, corporate events, and parties.",
-    createdAt: new Date("2024-01-01"),
-    updatedAt: new Date("2024-01-01")
-  },
-  {
-    id: "8",
-    title: "Conference Center",
-    description: "Professional conference facility with AV equipment",
-    price: 20000,
-    location: "Nairobi, Kenya",
-    rating: 4.7,
-    reviews: 89,
-    image: "/elegant-event-venue-with-chandeliers-and-tables.jpg",
-    amenities: ["AV Equipment", "WiFi", "Catering", "Parking"],
-    available: true,
-    category: "events",
-    owner: { id: "owner8", name: "David Ochieng", avatar: "/placeholder-user.jpg", rating: 4.8, verified: true },
-    images: ["/elegant-event-venue-with-chandeliers-and-tables.jpg"],
-    fullDescription: "Professional conference center perfect for corporate meetings, seminars, and training sessions.",
-    createdAt: new Date("2024-01-13"),
-    updatedAt: new Date("2024-01-13")
-  },
-
-  // 5. FASHION & LIFESTYLE - designer clothes, jewelry, bags, costumes
-  {
-    id: "9",
-    title: "Designer Evening Gown",
-    description: "Elegant designer gown for special occasions",
-    price: 5000,
-    location: "Nairobi, Kenya",
-    rating: 4.8,
-    reviews: 94,
-    image: "/designer-clothing-and-fashion-accessories.jpg",
-    amenities: ["Dry Cleaned", "Size M", "Designer Brand", "Accessories"],
-    available: true,
-    category: "fashion",
-    owner: { id: "owner9", name: "Mary Njeri", avatar: "/placeholder-user.jpg", rating: 4.8, verified: true },
-    images: ["/designer-clothing-and-fashion-accessories.jpg"],
-    fullDescription: "Stunning designer evening gown perfect for galas, weddings, and special events.",
-    createdAt: new Date("2024-01-03"),
-    updatedAt: new Date("2024-01-03")
-  },
-  {
-    id: "10",
-    title: "Designer Handbag Collection",
-    description: "Luxury handbags for special occasions",
-    price: 3000,
-    location: "Nairobi, Kenya",
-    rating: 4.9,
-    reviews: 156,
-    image: "/designer-clothing-and-fashion-accessories.jpg",
-    amenities: ["Authentic", "Multiple Colors", "Dust Bag", "Certificate"],
-    available: true,
-    category: "fashion",
-    owner: { id: "owner10", name: "Grace Wanjiku", avatar: "/placeholder-user.jpg", rating: 4.9, verified: true },
-    images: ["/designer-clothing-and-fashion-accessories.jpg"],
-    fullDescription: "Collection of authentic designer handbags perfect for special occasions.",
-    createdAt: new Date("2024-01-09"),
-    updatedAt: new Date("2024-01-09")
-  },
-
-  // 6. TECH & GADGETS - laptops, phones, gaming consoles, VR sets
-  {
-    id: "11",
-    title: "MacBook Pro M2",
-    description: "Latest MacBook Pro for professional work",
-    price: 12000,
-    location: "Nairobi, Kenya",
-    rating: 4.6,
-    reviews: 73,
-    image: "/modern-electronics-and-tech-gadgets-display.jpg",
-    amenities: ["16GB RAM", "512GB SSD", "Charger", "Case"],
-    available: true,
-    category: "tech",
-    owner: { id: "owner11", name: "Grace Wanjiku", avatar: "/placeholder-user.jpg", rating: 4.7, verified: true },
-    images: ["/modern-electronics-and-tech-gadgets-display.jpg"],
-    fullDescription: "Latest MacBook Pro M2 chip with 16GB RAM and 512GB SSD.",
-    createdAt: new Date("2024-01-05"),
-    updatedAt: new Date("2024-01-05")
-  },
-  {
-    id: "12",
-    title: "Gaming Console Setup",
-    description: "Complete gaming console with accessories",
-    price: 6000,
-    location: "Nairobi, Kenya",
-    rating: 4.9,
-    reviews: 89,
-    image: "/images/Gaming Setup.jpg",
-    amenities: ["Console", "Controllers", "Games", "HDMI Cable"],
-    available: true,
-    category: "tech",
-    owner: { id: "owner12", name: "Kevin Otieno", avatar: "/placeholder-user.jpg", rating: 4.9, verified: true },
-    images: ["/images/Gaming Setup.jpg"],
-    fullDescription: "Complete gaming console setup perfect for gaming tournaments and entertainment.",
-    createdAt: new Date("2024-01-02"),
-    updatedAt: new Date("2024-01-02")
-  },
-
-  // 7. SPORTS & RECREATION - bikes, gym equipment, musical instruments
-  {
-    id: "13",
-    title: "Mountain Bike Package",
-    description: "High-quality mountain bike for outdoor adventures",
-    price: 4000,
-    location: "Nairobi, Kenya",
-    rating: 4.8,
-    reviews: 78,
-    image: "/images/Mountain Bike.jpg",
-    amenities: ["Helmet", "Lock", "Repair Kit", "Water Bottle"],
-    available: true,
-    category: "sports",
-    owner: { id: "owner13", name: "Kevin Otieno", avatar: "/placeholder-user.jpg", rating: 4.8, verified: true },
-    images: ["/images/Mountain Bike.jpg"],
-    fullDescription: "Professional mountain bike perfect for trail riding and outdoor adventures.",
-    createdAt: new Date("2024-01-17"),
-    updatedAt: new Date("2024-01-17")
-  },
-  {
-    id: "14",
-    title: "Professional Piano",
-    description: "Grand piano for concerts and events",
-    price: 12000,
-    location: "Nairobi, Kenya",
-    rating: 4.9,
-    reviews: 89,
-    image: "/images/Vintage Camera Collection.jpg",
-    amenities: ["Tuning", "Delivery", "Setup", "Maintenance"],
-    available: true,
-    category: "sports",
-    owner: { id: "owner14", name: "Grace Wanjiku", avatar: "/placeholder-user.jpg", rating: 4.9, verified: true },
-    images: ["/images/Vintage Camera Collection.jpg"],
-    fullDescription: "Professional grand piano perfect for concerts, weddings, and special events.",
-    createdAt: new Date("2024-01-19"),
-    updatedAt: new Date("2024-01-19")
-  }
-]
+// Mock listings are now imported from lib/mock-listings-data.ts
 
 const mockCategories = [
   { id: "all", name: "All Categories", count: mockListings.length },
@@ -480,17 +214,16 @@ export default function ListingsPage() {
     }
   }
 
+  const router = useRouter()
+
   const handleViewDetails = async (listingId: string) => {
     if (!listingId) return
     
     // Track view
     await trackView(listingId, { source: 'listing_card' })
     
-    // Navigate to details page (you'll need to implement this)
-    toast({
-      title: "View Details",
-      description: "Redirecting to listing details..."
-    })
+    // Navigate to details page
+    router.push(`/listings/${listingId}`)
   }
 
 
@@ -791,9 +524,6 @@ export default function ListingsPage() {
                       <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-1">
                         {listing.title}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                        {listing.description}
-                      </p>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
