@@ -130,7 +130,7 @@ export const initializeDatabase = async (): Promise<void> => {
       AND table_name IN ('users', 'listings', 'bookings', 'chat_sessions', 'messages')
     `)
 
-    const existingTables = result.rows.map(row => row.table_name)
+    const existingTables = result.rows.map((row: any) => row.table_name)
     const requiredTables = ['users', 'listings', 'bookings', 'chat_sessions', 'messages']
     const missingTables = requiredTables.filter(table => !existingTables.includes(table))
 

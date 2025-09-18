@@ -271,9 +271,15 @@ export default function ListingsPage() {
 
       await bookingsService.createBooking(bookingData)
       toast({
-        title: "Booking created!",
+        title: "🎉 Booking Created!",
         description: "Your booking has been created and is pending confirmation. You can find it in your bookings page.",
+        duration: 5000,
       })
+      
+      // Redirect to bookings page after a short delay
+      setTimeout(() => {
+        router.push('/profile/bookings')
+      }, 2000)
     } catch (error) {
       console.error('Error creating booking:', error)
         toast({

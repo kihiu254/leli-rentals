@@ -45,8 +45,7 @@ export default function LoginPage() {
         description: "Welcome back to Leli Rentals.",
       })
 
-      // Redirect to profile page
-      router.push('/profile')
+      // AuthProvider will handle the redirect automatically
     } catch (error: any) {
       if (error.message?.includes('Invalid email or password') || error.message?.includes('invalid-credential')) {
         toast({
@@ -116,8 +115,7 @@ export default function LoginPage() {
           description: "Welcome back to Leli Rentals.",
         })
 
-        // Redirect to profile page
-        router.push('/profile')
+        // AuthProvider will handle the redirect automatically
       } catch (error: any) {
         toast({
           title: "Google login failed",

@@ -21,19 +21,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Handle redirect after authentication
   useEffect(() => {
     if (auth.isAuthenticated && auth.user && !hasRedirected) {
-      setHasRedirected(true)
+      console.log('Auth Provider: User authenticated, checking redirect needs')
       
-      // Check if user needs to select account type
-      if (needsAccountTypeSelection()) {
-        console.log('Auth Provider: User needs account type selection, redirecting to /get-started')
-        router.push('/get-started')
-      } else {
-        // Redirect based on account type using the utility function
-        const accountType = getUserAccountType()
-        const redirectUrl = getRedirectUrl(accountType)
-        console.log('Auth Provider: Redirecting to:', redirectUrl, 'for account type:', accountType)
-        router.push(redirectUrl)
-      }
+      // Small delay to ensure localStorage is accessible
+      setTimeout(() => {
+        setHasRedirected(true)
+        
+        // Check if user needs to select account type
+        if (needsAccountTypeSelection()) {
+          console.log('Auth Provider: User needs account type selection, redirecting to /get-started')
+          router.push('/get-started')
+        } else {
+          // Redirect based on account type using the utility function
+          const accountType = getUserAccountType()
+          const redirectUrl = getRedirectUrl(accountType)
+          console.log('Auth Provider: Redirecting to:', redirectUrl, 'for account type:', accountType)
+          router.push(redirectUrl)
+        }
+      }, 200)
     } else if (!auth.isAuthenticated) {
       setHasRedirected(false)
     }

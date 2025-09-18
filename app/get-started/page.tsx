@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthContext } from "@/components/auth-provider"
-import { useAccountTypeRedirect } from "@/lib/account-type-utils"
+import { useAccountTypeRedirect, getUserAccountType } from "@/lib/account-type-utils"
 import {
   User,
   Building2,
@@ -40,6 +40,32 @@ export default function GetStartedPage() {
   const { selectAccountType } = useAccountTypeRedirect()
   const [selectedAccountType, setSelectedAccountType] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCheckingAccountType, setIsCheckingAccountType] = useState(true)
+
+  // Check if user already has an account type and redirect them
+  useEffect(() => {
+    if (user) {
+      const existingAccountType = getUserAccountType()
+      console.log('Checking account type for user:', user.id, 'Account type:', existingAccountType)
+      
+      if (existingAccountType && existingAccountType !== 'null' && existingAccountType !== null) {
+        // User already has an account type, redirect them to their dashboard
+        console.log('User has account type, redirecting to:', existingAccountType)
+        if (existingAccountType === 'renter') {
+          router.push('/listings')
+        } else if (existingAccountType === 'owner') {
+          router.push('/dashboard/owner')
+        }
+      } else {
+        console.log('User needs to select account type')
+        // Clear any invalid account type values
+        if (existingAccountType === 'null') {
+          localStorage.removeItem('userAccountType')
+        }
+        setIsCheckingAccountType(false)
+      }
+    }
+  }, [user, router])
 
   const accountTypes = [
     {
@@ -133,6 +159,23 @@ export default function GetStartedPage() {
 
   const handleSkipForNow = () => {
     router.push('/listings')
+  }
+
+  // Show loading state while checking account type
+  if (isCheckingAccountType) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Header />
+        <div className="container mx-auto px-4 sm:px-6 max-w-6xl py-8 sm:py-12">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Setting up your account...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

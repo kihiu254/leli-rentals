@@ -37,7 +37,9 @@ export default function SignupPage() {
 
   // Email validation function
   const checkEmailAvailability = async (email: string) => {
-    if (!email || !email.includes('@')) {
+    // Enhanced email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
       setEmailStatus('invalid')
       return
     }
@@ -55,8 +57,18 @@ export default function SignupPage() {
       // Handle specific Firebase errors
       if (error.code === 'auth/invalid-email') {
         setEmailStatus('invalid')
+        toast({
+          title: "Invalid email format",
+          description: "Please enter a valid email address (e.g., user@example.com)",
+          variant: "destructive",
+        })
       } else {
         setEmailStatus('error')
+        toast({
+          title: "Email check failed",
+          description: "Unable to verify email availability. Please try again.",
+          variant: "destructive",
+        })
       }
     } finally {
       setIsCheckingEmail(false)
@@ -208,8 +220,8 @@ export default function SignupPage() {
         description: "Welcome to Leli Rentals! Please check your email to verify your account.",
       })
 
-      // Redirect to profile page
-      router.push('/profile')
+      // Redirect to get-started page for account type selection
+      router.push('/get-started')
     } catch (error: any) {
       if (error.message?.includes('already exists') || error.message?.includes('email-already-in-use')) {
         toast({
@@ -258,8 +270,8 @@ export default function SignupPage() {
           description: "Welcome to Leli Rentals. Your account has been created.",
         })
 
-        // Redirect to profile page
-        router.push('/profile')
+        // Redirect to get-started page for account type selection
+        router.push('/get-started')
       } catch (error: any) {
         toast({
           title: "Google signup failed",
@@ -375,10 +387,10 @@ export default function SignupPage() {
                       <span>Email is available</span>
                     </div>
                   )}
-                  {emailStatus === 'invalid' && formData.email && (
+                  {emailStatus === 'invalid' && (
                     <div className="flex items-center gap-2 text-sm text-red-600">
                       <AlertCircle className="h-4 w-4" />
-                      <span>Please enter a valid email address</span>
+                      <span>Please enter a valid email address (e.g., user@example.com)</span>
                     </div>
                   )}
                 </div>
