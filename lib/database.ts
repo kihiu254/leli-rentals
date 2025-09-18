@@ -146,8 +146,17 @@ export const initializeDatabase = async (): Promise<void> => {
   }
 }
 
-// Export the database instance for direct use
-export const db = getPool()
+// Export the database instance for direct use (lazy initialization)
+export const db = {
+  connect: async () => {
+    try {
+      return await getClient()
+    } catch (error) {
+      console.error('Database connection failed:', error)
+      throw error
+    }
+  }
+}
 
 export default {
   getPool,

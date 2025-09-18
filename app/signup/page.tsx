@@ -24,7 +24,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isCheckingEmail, setIsCheckingEmail] = useState(false)
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'available' | 'taken' | 'invalid'>('idle')
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'available' | 'taken' | 'invalid' | 'error'>('idle')
   const [formData, setFormData] = useState({
     name: "",
     email: "",

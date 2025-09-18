@@ -8,7 +8,7 @@ import { AuthProvider } from "@/components/auth-provider"
 import { NotificationProvider } from "@/lib/notification-context"
 import { AccountTypeReminder } from "@/components/account-type-reminder"
 import { AccountTypeModal } from "@/components/account-type-modal"
-import { useAccountTypeReminder } from "@/hooks/use-account-type-reminder.tsx"
+import { useAccountTypeReminder } from "@/hooks/use-account-type-reminder"
 import { useAccountTypeModal } from "@/hooks/use-account-type-modal"
 
 interface ClientLayoutProps {

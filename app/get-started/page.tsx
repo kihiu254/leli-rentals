@@ -48,7 +48,7 @@ export default function GetStartedPage() {
       const existingAccountType = getUserAccountType()
       console.log('Checking account type for user:', user.id, 'Account type:', existingAccountType)
       
-      if (existingAccountType && existingAccountType !== 'null' && existingAccountType !== null) {
+      if (existingAccountType && existingAccountType !== null) {
         // User already has an account type, redirect them to their dashboard
         console.log('User has account type, redirecting to:', existingAccountType)
         if (existingAccountType === 'renter') {

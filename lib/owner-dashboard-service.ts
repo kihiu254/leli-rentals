@@ -51,7 +51,7 @@ export class OwnerDashboardService {
   async getOwnerStats(ownerId: string): Promise<OwnerStats> {
     try {
       // Check if database is available
-      if (!db) {
+      if (!db || typeof window !== 'undefined') {
         console.warn('Database not available, returning mock data')
         return {
           totalEarnings: 0,
@@ -116,7 +116,7 @@ export class OwnerDashboardService {
   async getOwnerListings(ownerId: string): Promise<OwnerListing[]> {
     try {
       // Check if database is available
-      if (!db) {
+      if (!db || typeof window !== 'undefined') {
         console.warn('Database not available, returning empty array')
         return []
       }
@@ -171,7 +171,7 @@ export class OwnerDashboardService {
   async getOwnerBookings(ownerId: string): Promise<OwnerBooking[]> {
     try {
       // Check if database is available
-      if (!db) {
+      if (!db || typeof window !== 'undefined') {
         console.warn('Database not available, returning empty array')
         return []
       }
@@ -227,7 +227,7 @@ export class OwnerDashboardService {
   async getOwnerActivity(ownerId: string, limit: number = 10): Promise<OwnerActivity[]> {
     try {
       // Check if database is available
-      if (!db) {
+      if (!db || typeof window !== 'undefined') {
         console.warn('Database not available, returning empty array')
         return []
       }
@@ -307,6 +307,16 @@ export class OwnerDashboardService {
     totalReviews: number
   }> {
     try {
+      // Check if database is available
+      if (!db || typeof window !== 'undefined') {
+        console.warn('Database not available, returning default metrics')
+        return {
+          bookingSuccessRate: 0,
+          averageRating: 0,
+          totalReviews: 0
+        }
+      }
+      
       const client = await db.connect()
       
       try {

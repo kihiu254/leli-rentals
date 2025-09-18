@@ -36,9 +36,9 @@ export function Header() {
   // Load unread notification count
   useEffect(() => {
     const loadUnreadCount = async () => {
-      if (auth.user?.uid) {
+      if (auth.user?.id) {
         try {
-          const count = await notificationsService.getUnreadCount(auth.user.uid)
+          const count = await notificationsService.getUnreadCount(auth.user.id)
           setUnreadCount(count)
         } catch (error) {
           console.error('Error loading unread count:', error)
@@ -52,7 +52,7 @@ export function Header() {
     if (isNotificationPanelOpen) {
       loadUnreadCount()
     }
-  }, [auth.user?.uid, isNotificationPanelOpen])
+  }, [auth.user?.id, isNotificationPanelOpen])
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
