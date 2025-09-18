@@ -31,7 +31,7 @@ export default function HomePage() {
       <Header />
 
       <section
-        className="relative h-[70vh] sm:h-[80vh] md:h-screen flex items-center justify-center"
+        className="relative h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-screen flex items-center justify-center hero-background"
         style={{
           backgroundImage: "url('/luxury-cars-in-modern-showroom.jpg'), linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           backgroundSize: "cover",
@@ -43,11 +43,11 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-black/40 dark:bg-black/60 transition-all duration-500"></div>
 
         <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 sm:px-6">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-3 sm:mb-4 md:mb-6 text-balance drop-shadow-lg fade-in-up">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 text-balance drop-shadow-lg fade-in-up leading-tight">
             Find Your Perfect Rental
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 md:mb-12 text-pretty max-w-2xl mx-auto leading-relaxed drop-shadow-md fade-in-up stagger-1">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-12 text-pretty max-w-2xl mx-auto leading-relaxed drop-shadow-md fade-in-up stagger-1">
             Discover amazing rentals for every occasion.
             <br className="hidden sm:block" />
             <span className="sm:hidden"> </span>From cars to equipment, we've got you covered.
@@ -59,14 +59,14 @@ export default function HomePage() {
                 <Search className="absolute left-3 sm:left-4 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" />
                 <Input
                   placeholder="What are you looking for?"
-                  className="pl-10 sm:pl-12 h-10 sm:h-12 md:h-14 text-sm sm:text-base md:text-lg border-0 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500 transition-all duration-200 focus-enhanced"
+                  className="pl-10 sm:pl-12 h-12 sm:h-14 md:h-16 text-base sm:text-lg md:text-xl border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 focus-enhanced rounded-lg"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
                 />
               </div>
               <Button
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 sm:px-6 md:px-8 h-10 sm:h-12 md:h-14 text-sm sm:text-base md:text-lg font-semibold rounded-lg sm:rounded-xl min-w-[80px] sm:min-w-[100px] md:min-w-[120px] w-full sm:w-auto btn-animate shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 md:px-10 h-12 sm:h-14 md:h-16 text-base sm:text-lg md:text-xl font-semibold rounded-lg sm:rounded-xl min-w-[100px] sm:min-w-[120px] md:min-w-[140px] w-full sm:w-auto btn-animate shadow-lg hover:shadow-xl transition-all duration-200"
                 onClick={handleSearch}
               >
                 Search

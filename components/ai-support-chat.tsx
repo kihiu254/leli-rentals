@@ -289,7 +289,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
   }
 
   return (
-    <Card className="fixed bottom-4 right-4 w-full max-w-xs sm:max-w-sm md:w-80 h-[400px] sm:h-[450px] md:h-[500px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300 sm:bottom-6 sm:right-6">
+    <Card className="fixed bottom-4 right-4 w-full max-w-xs sm:max-w-sm md:w-80 h-[400px] sm:h-[450px] md:h-[500px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300 sm:bottom-6 sm:right-6 ai-support-chat">
       <CardHeader className="pb-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
@@ -364,7 +364,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                     key={index}
                     variant="outline"
                     size="sm"
-                    className="text-xs h-6 sm:h-7 px-2 sm:px-3 animate-in fade-in-0 slide-in-from-left-2"
+                    className="text-xs h-7 sm:h-8 px-3 sm:px-4 animate-in fade-in-0 slide-in-from-left-2 quick-reply border-2 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200"
                     style={{ animationDelay: `${index * 100}ms` }}
                     onClick={() => handleQuickReply(reply)}
                   >
@@ -388,7 +388,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                     key={index}
                     variant="ghost"
                     size="sm"
-                    className="text-xs h-5 sm:h-6 px-2 sm:px-3 bg-white hover:bg-blue-50 animate-in fade-in-0 slide-in-from-right-2"
+                    className="text-xs h-6 sm:h-7 px-3 sm:px-4 bg-white hover:bg-blue-50 animate-in fade-in-0 slide-in-from-right-2 border border-gray-200 hover:border-blue-300 transition-all duration-200"
                     style={{ animationDelay: `${index * 100}ms` }}
                     onClick={() => handleSuggestedAction(action)}
                   >
@@ -418,12 +418,12 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                   
                   <div className="flex flex-col">
                     <div
-                      className={`rounded-lg px-3 py-2 ${
+                      className={`rounded-lg px-3 py-2 message-bubble ${
                         message.sender === "user" 
-                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white" 
+                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg" 
                           : message.sender === "ai"
-                          ? "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200"
-                          : "bg-gray-100"
+                          ? "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 shadow-md"
+                          : "bg-gray-100 shadow-md"
                       }`}
                     >
                       {(message.sender === "ai" || message.sender === "agent") && (
@@ -438,7 +438,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                         </div>
                       )}
                       
-                      <p className="text-xs sm:text-sm whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed font-medium">{message.content}</p>
                       
                       <div className="flex items-center justify-between mt-2">
                         <p className="text-xs opacity-70">
@@ -540,7 +540,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1 text-xs sm:text-sm h-6 sm:h-8"
+                className="flex-1 text-sm sm:text-base h-8 sm:h-10 px-3 py-2 border-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 disabled={isAIResponding}
               />
               

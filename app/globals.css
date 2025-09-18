@@ -271,6 +271,135 @@
   }
 }
 
+/* Mobile Responsiveness Improvements */
+@media (max-width: 768px) {
+  /* Mobile viewport fixes */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+  
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Mobile-friendly touch targets */
+  button, 
+  [role="button"], 
+  input[type="submit"], 
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Mobile-friendly form inputs */
+  input, 
+  textarea, 
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
+  
+  /* Mobile-friendly cards */
+  .card {
+    margin: 8px;
+    border-radius: 12px;
+  }
+  
+  /* Mobile-friendly spacing */
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  /* Mobile-friendly text sizes */
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.125rem; }
+  
+  /* Mobile-friendly buttons */
+  .btn {
+    padding: 12px 16px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+  
+  /* Mobile-friendly navigation */
+  nav {
+    padding: 8px 16px;
+  }
+  
+  /* Mobile-friendly lists */
+  ul, ol {
+    padding-left: 20px;
+  }
+  
+  /* Mobile-friendly tables */
+  table {
+    font-size: 14px;
+  }
+  
+  th, td {
+    padding: 8px 4px;
+  }
+  
+  /* Mobile-friendly hero section */
+  .hero-background {
+    height: 60vh !important;
+    min-height: 400px;
+  }
+  
+  /* Mobile-friendly AI chat */
+  .ai-support-chat {
+    width: calc(100vw - 16px) !important;
+    max-width: none !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 8px !important;
+    height: calc(100vh - 16px) !important;
+    max-height: 500px !important;
+  }
+  
+  .message-bubble {
+    max-width: 90% !important;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    padding: 12px 16px !important;
+  }
+  
+  .quick-reply {
+    font-size: 0.75rem;
+    padding: 8px 12px;
+    border-radius: 16px;
+    margin: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small mobile devices */
+  .hero-background {
+    height: 50vh !important;
+    min-height: 300px;
+  }
+  
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.125rem; }
+  
+  .ai-support-chat {
+    height: calc(100vh - 8px) !important;
+    max-height: none !important;
+  }
+  
+  .message-bubble {
+    max-width: 95% !important;
+    padding: 10px 14px !important;
+  }
+}
+
 @keyframes fadeInDown {
   from {
     opacity: 0;
