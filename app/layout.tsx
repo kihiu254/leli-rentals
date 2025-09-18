@@ -15,7 +15,13 @@ export const metadata: Metadata = {
   title: "Leli Rentals - Modern Tech-Inspired Rental Marketplace",
   description: "Discover the perfect rental for every occasion with our modern, user-friendly platform",
   generator: "v0.app",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+}
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({

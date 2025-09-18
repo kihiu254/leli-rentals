@@ -9,7 +9,8 @@
     "dev:turbo": "next dev --turbopack",
     "lint": "next lint",
     "start": "next start",
-    "check-env": "node scripts/check-env.js"
+    "check-env": "node scripts/check-env.js",
+    "check-firebase": "node scripts/check-firebase-config.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
