@@ -242,20 +242,12 @@
     @apply focus:ring-offset-gray-800;
   }
   
-  /* Hero background with fallback */
+  /* Hero background */
   .hero-background {
-    background-image: url('/modern-rental-marketplace-hero-with-cars--apartmen.jpg'), url('/images/rental-hero-background.jpg');
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
-  }
-  
-  /* Responsive background attachment */
-  @media (max-width: 768px) {
-    .hero-background {
-      background-attachment: scroll;
-    }
   }
 }
 
