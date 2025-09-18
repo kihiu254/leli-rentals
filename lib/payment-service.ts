@@ -1,6 +1,8 @@
 // Payment service for M-Pesa, Airtel Money, and Card payments
 // This integrates with real payment providers
 
+import { notificationsService } from './notifications-service'
+
 export interface PaymentMethod {
   id: string
   name: string
@@ -74,36 +76,20 @@ class PaymentService {
   getPaymentMethods(): PaymentMethod[] {
     return [
       {
-        id: 'mpesa',
-        name: 'M-Pesa',
-        type: 'mpesa',
-        icon: '📱',
-        enabled: true,
-        fees: { percentage: 0, fixed: 0 }
-      },
-      {
-        id: 'airtel',
-        name: 'Airtel Money',
-        type: 'airtel',
-        icon: '📱',
-        enabled: true,
-        fees: { percentage: 0, fixed: 0 }
-      },
-      {
-        id: 'card',
-        name: 'Credit/Debit Card',
+        id: 'visa',
+        name: 'Visa Card',
         type: 'card',
         icon: '💳',
         enabled: true,
         fees: { percentage: 2.9, fixed: 0 }
       },
       {
-        id: 'bank_transfer',
-        name: 'Bank Transfer',
-        type: 'bank_transfer',
-        icon: '🏦',
+        id: 'paystack',
+        name: 'Paystack',
+        type: 'paystack',
+        icon: '💳',
         enabled: true,
-        fees: { percentage: 0, fixed: 0 }
+        fees: { percentage: 1.5, fixed: 0 }
       }
     ]
   }
@@ -295,6 +281,33 @@ class PaymentService {
     }
   }
 
+  // Process Paystack payment
+  async processPaystackPayment(request: {
+    amount: number
+    email: string
+    reference: string
+    description: string
+  }): Promise<PaymentResponse> {
+    try {
+      // Simulate Paystack payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      return {
+        success: true,
+        transactionId: `PS_${Date.now()}`,
+        message: 'Payment processed successfully via Paystack.',
+        status: 'completed'
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Paystack payment failed.',
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  }
+
   // Process bank transfer
   async processBankTransfer(amount: number, reference: string): Promise<PaymentResponse> {
     try {
@@ -329,25 +342,11 @@ class PaymentService {
 
   // Generic payment processor
   async processPayment(request: PaymentRequest): Promise<PaymentResponse> {
+    let response: PaymentResponse
+    
     switch (request.paymentMethod) {
-      case 'mpesa':
-        return this.processMpesaPayment({
-          amount: request.amount,
-          phoneNumber: request.customer.phone || '',
-          accountReference: request.id,
-          transactionDesc: request.description
-        })
-      
-      case 'airtel':
-        return this.processAirtelPayment({
-          amount: request.amount,
-          phoneNumber: request.customer.phone || '',
-          reference: request.id,
-          description: request.description
-        })
-      
-      case 'card':
-        return this.processCardPayment({
+      case 'visa':
+        response = await this.processCardPayment({
           amount: request.amount,
           currency: request.currency,
           cardNumber: '', // This would come from the frontend securely
@@ -357,18 +356,42 @@ class PaymentService {
           cardholderName: request.customer.name,
           email: request.customer.email
         })
+        break
       
-      case 'bank_transfer':
-        return this.processBankTransfer(request.amount, request.id)
+      case 'paystack':
+        response = await this.processPaystackPayment({
+          amount: request.amount,
+          email: request.customer.email,
+          reference: request.id,
+          description: request.description
+        })
+        break
       
       default:
-        return {
+        response = {
           success: false,
           message: 'Invalid payment method selected.',
           status: 'failed',
           error: 'Invalid payment method'
         }
     }
+
+    // Create notification for payment result
+    try {
+      if (request.metadata?.userId) {
+        await notificationsService.createPaymentNotification(request.metadata.userId, {
+          bookingId: request.metadata.bookingId || request.id,
+          amount: request.amount,
+          status: response.success ? 'success' : 'failed',
+          method: request.paymentMethod
+        })
+      }
+    } catch (notificationError) {
+      console.error('Error creating payment notification:', notificationError)
+      // Don't throw error for notification failure
+    }
+
+    return response
   }
 
   // Check payment status

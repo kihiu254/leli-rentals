@@ -2,7 +2,7 @@ import React from "react"
 
 export default function ChatPrivacyPage() {
   return (
-    <main style={{ padding: 24, maxWidth: 880, margin: '0 auto' }}>
+    <main className="p-6 max-w-4xl mx-auto">
       <h1>Chat & Support Privacy Policy</h1>
       <p>Last updated: September 15, 2025</p>
 
@@ -43,7 +43,7 @@ export default function ChatPrivacyPage() {
         Support WhatsApp: <a href="https://wa.me/254112081866">+254112081866</a>
       </p>
 
-      <p style={{ marginTop: 24, fontSize: 13, color: '#666' }}>If you have questions about this policy or wish to exercise your rights, please contact support.</p>
+      <p className="mt-6 text-sm text-gray-600 dark:text-gray-400">If you have questions about this policy or wish to exercise your rights, please contact support.</p>
     </main>
   )
 }

@@ -266,7 +266,7 @@ export default function ListingsPage() {
 
 
   if (!user) {
-    router.push('/login')
+    router.push('/signin')
     return null
   }
 

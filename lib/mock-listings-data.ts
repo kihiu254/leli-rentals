@@ -73,14 +73,14 @@ export const generateMockListings = (): Listing[] => {
 
   const locations = ["Nairobi, Kenya", "Mombasa, Kenya", "Kisumu, Kenya", "Nakuru, Kenya", "Eldoret, Kenya"]
   const owners = [
-    { id: "owner1", name: "John Mwangi", rating: 4.9, verified: true },
-    { id: "owner2", name: "Sarah Kimani", rating: 4.8, verified: true },
-    { id: "owner3", name: "David Ochieng", rating: 4.7, verified: true },
-    { id: "owner4", name: "Mary Njeri", rating: 4.9, verified: true },
-    { id: "owner5", name: "Peter Kamau", rating: 4.6, verified: true },
-    { id: "owner6", name: "Grace Wanjiku", rating: 4.8, verified: true },
-    { id: "owner7", name: "Kevin Otieno", rating: 4.7, verified: true },
-    { id: "owner8", name: "James Mutua", rating: 4.9, verified: true }
+    { id: "owner1", name: "John Mwangi", rating: 4.9, verified: true, phone: "+254700123456" },
+    { id: "owner2", name: "Sarah Kimani", rating: 4.8, verified: true, phone: "+254700234567" },
+    { id: "owner3", name: "David Ochieng", rating: 4.7, verified: true, phone: "+254700345678" },
+    { id: "owner4", name: "Mary Njeri", rating: 4.9, verified: true, phone: "+254700456789" },
+    { id: "owner5", name: "Peter Kamau", rating: 4.6, verified: true, phone: "+254700567890" },
+    { id: "owner6", name: "Grace Wanjiku", rating: 4.8, verified: true, phone: "+254700678901" },
+    { id: "owner7", name: "Kevin Otieno", rating: 4.7, verified: true, phone: "+254700789012" },
+    { id: "owner8", name: "James Mutua", rating: 4.9, verified: true, phone: "+254700890123" }
   ]
 
   const images = [

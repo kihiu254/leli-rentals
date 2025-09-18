@@ -5,7 +5,7 @@ import type React from "react"
 import { Search, Moon, Sun, User, Bell, ChevronDown } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from "@/lib/auth"
-import { useNotifications } from "@/lib/notification-context"
+import { notificationsService } from '@/lib/notifications-service'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTheme } from "next-themes"
@@ -26,12 +26,33 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   const [mounted, setMounted] = useState(false)
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const auth = useAuth()
-  const { unreadCount } = useNotifications()
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Load unread notification count
+  useEffect(() => {
+    const loadUnreadCount = async () => {
+      if (auth.user?.uid) {
+        try {
+          const count = await notificationsService.getUnreadCount(auth.user.uid)
+          setUnreadCount(count)
+        } catch (error) {
+          console.error('Error loading unread count:', error)
+        }
+      }
+    }
+
+    loadUnreadCount()
+    
+    // Refresh count when notification panel opens/closes
+    if (isNotificationPanelOpen) {
+      loadUnreadCount()
+    }
+  }, [auth.user?.uid, isNotificationPanelOpen])
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -48,181 +69,178 @@ export function Header() {
   return (
     <header className="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-all duration-300 shadow-theme">
       <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6 max-w-7xl">
-        <Link href="/" className="flex items-center">
-          <Image
-            src={mounted && theme === "dark" ? "/logo-white.svg" : "/logo-black.svg"}
-            alt="Leli Rentals"
-            width={96}
-            height={24}
-            className="h-5 w-auto sm:h-6 transition-all duration-200"
-            priority
+        {/* Logo */}
+        <Link href="/" className="flex items-center group mr-8 lg:mr-12">
+          <img 
+            src="/default-monochrome-black.svg" 
+            alt="Leli Rentals Logo" 
+            className="logo-mobile sm:logo-desktop object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
+          />
+          <img 
+            src="/default-monochrome-white.svg" 
+            alt="Leli Rentals Logo" 
+            className="logo-mobile sm:logo-desktop object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
           />
         </Link>
 
-        <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-          <Link href="/" className="text-orange-500 hover:text-orange-600 font-medium transition-colors text-sm xl:text-base">
+        {/* Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+          <Link 
+            href="/" 
+            className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
+          >
             Home
           </Link>
-          <Link
-            href="/categories"
-            className="text-gray-800 dark:text-gray-200 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
+          <Link 
+            href="/categories" 
+            className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
           >
             Categories
           </Link>
-          <Link
-            href="/get-started"
-            className="text-gray-800 dark:text-gray-200 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
+          <Link 
+            href="/get-started" 
+            className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
           >
             Get Started
           </Link>
-          <Link
-            href="/about"
-            className="text-gray-800 dark:text-gray-200 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
+          <Link 
+            href="/about" 
+            className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
           >
             About
           </Link>
-          <Link
-            href="/contact"
-            className="text-gray-800 dark:text-gray-200 hover:text-orange-500 font-medium transition-colors text-sm xl:text-base"
+          <Link 
+            href="/contact" 
+            className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
           >
             Contact
           </Link>
         </nav>
-        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-          {/* Mobile Search Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-colors lg:hidden"
-            onClick={() => {
-              // Toggle mobile search - you can implement a mobile search modal here
-              const searchInput = document.querySelector('input[placeholder="Search Rentals"]') as HTMLInputElement
-              if (searchInput) {
-                searchInput.focus()
-              }
-            }}
-          >
-            <Search className="h-4 w-4" />
-          </Button>
-          
-          <div className="hidden lg:flex relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+
+        {/* Search Bar */}
+        <div className="hidden md:flex items-center gap-2 sm:gap-3 flex-1 max-w-sm mx-2">
+          <div className="relative flex-1 group">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 group-focus-within:text-orange-500 transition-colors duration-200" />
             <Input
               placeholder="Search Rentals"
-              className="pl-10 w-48 xl:w-64 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-orange-500 transition-all text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
+              className="pl-8 h-8 sm:h-9 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-orange-500 focus:ring-orange-500 transition-all duration-200 focus-enhanced text-sm"
             />
-            {searchQuery && (
-              <Button
-                size="sm"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 bg-orange-500 hover:bg-orange-600"
-                onClick={handleSearch}
-              >
-                <Search className="h-3 w-3" />
-              </Button>
-            )}
           </div>
-
           <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200 btn-animate"
+            onClick={handleSearch}
+            className="h-8 sm:h-9 px-2 sm:px-3 bg-orange-500 hover:bg-orange-600 text-white transition-all duration-200 btn-animate"
           >
-            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0 text-yellow-500" />
-            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100 text-blue-400" />
-            <span className="sr-only">Toggle theme</span>
+            <Search className="h-3 w-3" />
           </Button>
+        </div>
+
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Theme Toggle */}
+          {mounted && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200 btn-animate"
+            >
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0 text-yellow-500" />
+              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100 text-blue-400" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+          )}
 
           {auth.user ? (
-            // Authenticated user section - matches the image design
+            // Authenticated user section
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Notification Bell */}
               <div className="relative">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-colors"
-                  onClick={() => setIsNotificationPanelOpen(!isNotificationPanelOpen)}
+                  onClick={() => setIsNotificationPanelOpen(true)}
+                  className="h-8 w-8 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors relative"
                 >
                   <Bell className="h-4 w-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </Button>
-                {/* Notification badge */}
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center text-[10px] sm:text-xs">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
               </div>
 
               {/* User Profile Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
-                      <AvatarImage src={auth.user.avatar || ""} />
-                      <AvatarFallback className="bg-purple-500 text-white text-xs sm:text-sm font-medium">
-                        {auth.user.name?.charAt(0) || auth.user.email?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {auth.user.name || auth.user.email?.split("@")[0] || "User"}
-                    </span>
-                    <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
-                      My Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile/bookings" className="cursor-pointer">
-                      My Bookings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile/listings" className="cursor-pointer">
-                      My Listings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile/favorites" className="cursor-pointer">
-                      Favorites
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile/settings" className="cursor-pointer">
-                      Account Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile/billing" className="cursor-pointer">
-                      Billing & Payments
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/help" className="cursor-pointer">
-                      Help & Support
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={() => auth.signOut()}
-                    className="cursor-pointer text-red-600 hover:text-red-700"
-                  >
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {mounted && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+                        <AvatarImage src={auth.user.avatar || ""} />
+                        <AvatarFallback className="bg-purple-500 text-white text-xs sm:text-sm font-medium">
+                          {auth.user.name?.charAt(0) || auth.user.email?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {auth.user.name || auth.user.email?.split("@")[0] || "User"}
+                      </span>
+                      <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="cursor-pointer">
+                        My Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile/bookings" className="cursor-pointer">
+                        My Bookings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile/listings" className="cursor-pointer">
+                        My Listings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile/favorites" className="cursor-pointer">
+                        Favorites
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile/settings" className="cursor-pointer">
+                        Account Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile/billing" className="cursor-pointer">
+                        Billing & Payments
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/help" className="cursor-pointer">
+                        Help & Support
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => auth.signOut()}
+                      className="cursor-pointer text-red-600 hover:text-red-700"
+                    >
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           ) : (
             // Non-authenticated user section
@@ -243,30 +261,32 @@ export function Header() {
                 </Button>
               </div>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors md:hidden"
-                  >
-                    <User className="h-4 w-4" />
-                    <span className="sr-only">Profile menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link href="/login" className="cursor-pointer">
-                      Sign in
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/signup" className="cursor-pointer">
-                      Sign up
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {mounted && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors md:hidden"
+                    >
+                      <User className="h-4 w-4" />
+                      <span className="sr-only">Profile menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild>
+                      <Link href="/login" className="cursor-pointer">
+                        Sign in
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/signup" className="cursor-pointer">
+                        Sign up
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </>
           )}
         </div>

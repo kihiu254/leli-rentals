@@ -13,6 +13,7 @@ import {
   Timestamp
 } from "firebase/firestore"
 import { db } from "./firebase"
+import { notificationsService } from "./notifications-service"
 
 // Check if Firebase is properly initialized
 const isFirebaseInitialized = () => {
@@ -169,6 +170,24 @@ export const bookingsService = {
       }
       
       const docRef = await addDoc(collection(db, "bookings"), bookingData)
+      
+      // Create notification for the user
+      try {
+        await notificationsService.createBookingNotification(booking.userId, {
+          bookingId: docRef.id,
+          listingTitle: booking.listingTitle,
+          status: 'pending',
+          totalPrice: booking.totalPrice,
+          dates: {
+            start: booking.dates.start,
+            end: booking.dates.end
+          }
+        })
+      } catch (notificationError) {
+        console.error('Error creating booking notification:', notificationError)
+        // Don't throw error for notification failure
+      }
+      
       return docRef.id
     } catch (error) {
       console.error("Error creating booking:", error)

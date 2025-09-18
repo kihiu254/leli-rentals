@@ -50,9 +50,14 @@ export default function SignupPage() {
       } else {
         setEmailStatus('available')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking email:', error)
-      setEmailStatus('invalid')
+      // Handle specific Firebase errors
+      if (error.code === 'auth/invalid-email') {
+        setEmailStatus('invalid')
+      } else {
+        setEmailStatus('error')
+      }
     } finally {
       setIsCheckingEmail(false)
     }

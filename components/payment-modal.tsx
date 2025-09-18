@@ -54,22 +54,7 @@ export default function PaymentModal({ isOpen, onClose, plan }: PaymentModalProp
     cardholderName: ''
   })
 
-  const paymentMethods: PaymentMethod[] = paymentService.getPaymentMethods()
-  
-  // Add Paystack as a custom payment method
-  const paystackMethod: PaymentMethod = {
-    id: 'paystack',
-    name: 'Paystack (Recommended)',
-    type: 'card',
-    icon: '💳',
-    enabled: true,
-    fees: {
-      percentage: 0,
-      fixed: 0
-    }
-  }
-  
-  const allPaymentMethods = [paystackMethod, ...paymentMethods]
+  const allPaymentMethods: PaymentMethod[] = paymentService.getPaymentMethods()
 
   const handlePayment = async () => {
     if (!selectedMethod) {

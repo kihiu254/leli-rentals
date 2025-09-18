@@ -368,7 +368,7 @@ export default function CategoriesPage() {
                 <Button 
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6"
+                  className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6 font-semibold"
                   onClick={() => router.push('/about')}
                 >
                   Learn More

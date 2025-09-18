@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -29,6 +30,9 @@ import {
 } from "lucide-react"
 
 export default function ContactPage() {
+  const searchParams = useSearchParams()
+  const ownerParam = searchParams?.get('owner')
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -40,6 +44,23 @@ export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const { toast } = useToast()
+
+  // Handle owner parameter from URL
+  useEffect(() => {
+    if (ownerParam) {
+      setFormData(prev => ({
+        ...prev,
+        subject: `Inquiry about rental from ${ownerParam}`,
+        message: `Hello ${ownerParam},\n\nI'm interested in discussing a rental opportunity. Please let me know more details.\n\nBest regards,`
+      }))
+      
+      toast({
+        title: "Contact form pre-filled",
+        description: `Form has been pre-filled for contacting ${ownerParam}`,
+        duration: 3000,
+      })
+    }
+  }, [ownerParam, toast])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

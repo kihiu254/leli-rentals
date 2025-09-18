@@ -39,6 +39,7 @@ export interface Listing {
     avatar: string
     rating: number
     verified: boolean
+    phone?: string
   }
   images: string[]
   fullDescription: string

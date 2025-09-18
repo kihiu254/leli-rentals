@@ -271,6 +271,25 @@
   }
 }
 
+/* Sidebar CSS Custom Properties */
+.sidebar-wrapper {
+  --sidebar-width: 16rem;
+  --sidebar-width-icon: 3rem;
+}
+
+/* Logo Dimensions - Following Brand Guidelines */
+.logo-mobile {
+  height: 24px;
+  width: auto;
+  max-width: 120px;
+}
+
+.logo-desktop {
+  height: 32px;
+  width: auto;
+  max-width: 160px;
+}
+
 /* Mobile Responsiveness Improvements */
 @media (max-width: 768px) {
   /* Mobile viewport fixes */

@@ -30,16 +30,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-background transition-all duration-500">
       <Header />
 
-      <section
-        className="relative h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-screen flex items-center justify-center hero-background"
-        style={{
-          backgroundImage: "url('/luxury-cars-in-modern-showroom.jpg'), linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundAttachment: "scroll"
-        }}
-      >
+      <section className="relative h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-screen flex items-center justify-center hero-background">
         <div className="absolute inset-0 bg-black/40 dark:bg-black/60 transition-all duration-500"></div>
 
         <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 sm:px-6">
@@ -433,7 +424,7 @@ export default function HomePage() {
                   <p className="text-sm opacity-90 mb-4">
                     Choose your path and set up your profile in minutes
                   </p>
-                  <Button variant="outline" className="get-started-button px-6 py-2">
+                  <Button variant="outline" className="get-started-button px-6 py-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300">
                     Start Your Journey
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -451,7 +442,7 @@ export default function HomePage() {
                   <p className="text-sm opacity-90 mb-4">
                     Explore thousands of items across all categories
                   </p>
-                  <Button variant="outline" className="get-started-button px-6 py-2">
+                  <Button variant="outline" className="get-started-button px-6 py-2 border-white text-white hover:bg-white hover:text-purple-600 transition-all duration-300">
                     Explore Now
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>

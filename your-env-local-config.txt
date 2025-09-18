@@ -1,0 +1,31 @@
+# Copy this content to your .env.local file
+
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyDzv5FX8AECAsA0a2---XpMD8GK5N
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=leli-rentals-52a08.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=leli-rentals-52a08
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=leli-rentals-52a08.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id_here
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id_here
+
+# Render Database Configuration
+RENDER_DB_HOST=dpg-d3612q1r0fns73bhopo0-a
+RENDER_DB_NAME=lelirentals
+RENDER_DB_USER=lelirentals_user
+RENDER_DB_PASSWORD=i2vAf2EJ68fEhhroqZweQ67IhpI5fJbe
+RENDER_DB_PORT=5432
+
+# Alternative PostgreSQL Environment Variables
+POSTGRES_HOST=dpg-d3612q1r0fns73bhopo0-a
+POSTGRES_DB=lelirentals
+POSTGRES_USER=lelirentals_user
+POSTGRES_PASSWORD=i2vAf2EJ68fEhhroqZweQ67IhpI5fJbe
+POSTGRES_PORT=5432
+
+# Paystack Configuration
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=your-paystack-public-key
+PAYSTACK_SECRET_KEY=your-paystack-secret-key
+
+# Next.js Configuration
+NODE_ENV=development
+NEXT_PUBLIC_APP_URL=http://localhost:3000

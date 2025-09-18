@@ -1,0 +1,30 @@
+# Render Database Configuration for .env.local
+# Copy these variables to your .env.local file
+
+# Render Database Configuration
+# Replace these with your actual Render PostgreSQL database credentials
+RENDER_DB_HOST=your-render-db-host
+RENDER_DB_NAME=your-render-db-name
+RENDER_DB_USER=your-render-db-user
+RENDER_DB_PASSWORD=your-render-db-password
+RENDER_DB_PORT=5432
+
+# Alternative PostgreSQL Environment Variables (if using different naming)
+POSTGRES_HOST=your-render-db-host
+POSTGRES_DB=your-render-db-name
+POSTGRES_USER=your-render-db-user
+POSTGRES_PASSWORD=your-render-db-password
+POSTGRES_PORT=5432
+
+# Instructions for Render Database Setup:
+# 1. Go to https://dashboard.render.com
+# 2. Create a new PostgreSQL database
+# 3. Copy the connection details from your Render database dashboard
+# 4. Replace the placeholder values above with your actual credentials
+# 5. Example format:
+#    RENDER_DB_HOST=dpg-xxxxx-a.oregon-postgres.render.com
+#    RENDER_DB_NAME=lelirentals
+#    RENDER_DB_USER=lelirentals_user
+#    RENDER_DB_PASSWORD=your-actual-password-here
+
+# Add these to your existing .env.local file along with your Firebase config

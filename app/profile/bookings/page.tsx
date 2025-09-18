@@ -133,13 +133,18 @@ export default function BookingsPage() {
 
   const handleContactOwner = async (ownerName: string) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      // Show loading toast
       toast({
         title: "Opening chat",
         description: `Starting a conversation with ${ownerName}...`,
       })
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Navigate to messages page
+      router.push(`/messages?owner=${encodeURIComponent(ownerName)}`)
+      
     } catch (error) {
       toast({
         title: "Error opening chat",
@@ -150,22 +155,89 @@ export default function BookingsPage() {
   }
 
   const handleViewListing = (listingId: string) => {
-    router.push(`/items/${listingId}`)
+    router.push(`/listings/details/${listingId}`)
   }
 
   const handleDownloadReceipt = async (bookingId: string) => {
     try {
+      // Find the booking details
+      const booking = bookings.find(b => b.id === bookingId)
+      if (!booking) {
+        toast({
+          title: "Booking not found",
+          description: "Unable to find booking details.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Show loading toast
+      toast({
+        title: "Generating receipt",
+        description: "Creating your booking receipt...",
+      })
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
       
+      // Generate receipt content
+      const receiptContent = `
+LELI RENTALS - BOOKING RECEIPT
+================================
+
+Booking ID: ${booking.id}
+Date: ${new Date().toLocaleDateString()}
+Time: ${new Date().toLocaleTimeString()}
+
+RENTAL DETAILS:
+---------------
+Item: ${booking.listingTitle}
+Owner: ${booking.ownerName}
+Duration: ${booking.dates.duration} day(s)
+Start Date: ${booking.dates.start.toLocaleDateString()}
+End Date: ${booking.dates.end.toLocaleDateString()}
+Location: ${booking.location}
+
+PRICING:
+--------
+Daily Rate: KSh ${booking.totalPrice / booking.dates.duration}
+Total Duration: ${booking.dates.duration} day(s)
+Total Amount: KSh ${booking.totalPrice}
+
+STATUS:
+-------
+Booking Status: ${booking.status.toUpperCase()}
+Payment Status: ${booking.paymentStatus.toUpperCase()}
+
+POLICIES:
+---------
+${booking.cancellationPolicy}
+
+Thank you for choosing Leli Rentals!
+For support, contact: support@lelirentals.com
+      `.trim()
+
+      // Create and download the receipt
+      const blob = new Blob([receiptContent], { type: 'text/plain' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `receipt-${booking.id}-${new Date().toISOString().split('T')[0]}.txt`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
       toast({
-        title: "Receipt downloaded",
-        description: "Your booking receipt has been downloaded.",
+        title: "✅ Receipt downloaded",
+        description: "Your booking receipt has been downloaded successfully.",
+        duration: 3000,
       })
     } catch (error) {
+      console.error('Error downloading receipt:', error)
       toast({
-        title: "Error downloading receipt",
-        description: "Please try again.",
+        title: "❌ Error downloading receipt",
+        description: "Please try again or contact support.",
         variant: "destructive",
       })
     }

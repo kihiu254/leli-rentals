@@ -1,8 +1,41 @@
-# Copy this content to a file named .env.local in your project root  
+# Firebase Configuration  
+# Real Firebase configuration for leli-rentals-52a08  
   
-NEXT_PUBLIC_FIREBASE_API_KEY=your_actual_api_key_here  
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com  
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id  
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com  
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id  
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id 
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyDzv5FX8AECAsA0a2--XpMD8GK5NOP1Rhg  
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=leli-rentals-52a08.firebaseapp.com  
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=leli-rentals-52a08  
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=leli-rentals-52a08.firebasestorage.app  
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=220739389697  
+NEXT_PUBLIC_FIREBASE_APP_ID=1:220739389697:web:701c8d4141b29d88a13300 
+
+
+# Paystack Configuration
+# Get these from your Paystack dashboard: https://dashboard.paystack.com/#/settings/developers
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_6b5af019feb0a47dc1c2cfdbb6c8ed6fc5eecf85
+PAYSTACK_SECRET_KEY=sk_test_493eee98186340a114551307307fbd2be958af4c
+
+
+
+# Other Payment Providers (Optional - for fallback methods)
+ NEXT_PUBLIC_MPESA_CONSUMER_KEY=your_mpesa_consumer_key
+ NEXT_PUBLIC_MPESA_CONSUMER_SECRET=your_mpesa_consumer_secret
+ NEXT_PUBLIC_MPESA_SHORTCODE=your_mpesa_shortcode
+ NEXT_PUBLIC_MPESA_PASSKEY=your_mpesa_passkey
+
+ NEXT_PUBLIC_AIRTEL_CLIENT_ID=your_airtel_client_id
+ NEXT_PUBLIC_AIRTEL_CLIENT_SECRET=your_airtel_client_secret
+
+ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+ STRIPE_SECRET_KEY=your_stripe_secret_key
+
+ # Database Connection
+RENDER_DB_HOST=dpg-d3612q1r0fns73bhopo0-a
+RENDER_DB_NAME=lelirentals
+RENDER_DB_USER=lelirentals_user
+RENDER_DB_PASSWORD=i2vAf2EJ68fEhhroqZweQ67IhpI5fJbe
+RENDER_DB_PORT=5432
+
+# Production settings
+NODE_ENV=production
+NEXT_PUBLIC_APP_URL=https://leli-rentals-67uy.onrender.com
+```

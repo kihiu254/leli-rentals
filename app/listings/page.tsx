@@ -276,11 +276,11 @@ export default function ListingsPage() {
       })
     } catch (error) {
       console.error('Error creating booking:', error)
-      toast({
+        toast({
         title: "Error creating booking",
         description: "Please try again or contact support.",
-        variant: "destructive",
-      })
+          variant: "destructive",
+        })
     }
   }
 
@@ -346,30 +346,30 @@ export default function ListingsPage() {
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
               <div className="relative flex-1 group">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 group-focus-within:text-blue-500 transition-colors duration-200" />
-                <Input
+              <Input
                   placeholder="Search rentals, locations, or categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-12 h-12 sm:h-14 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 focus-enhanced rounded-xl text-base"
-                />
-              </div>
+              />
+            </div>
               <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
                   className="h-12 sm:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-xl px-6"
-                >
+              >
                   <SlidersHorizontal className="h-5 w-5 mr-2" />
                   <span className="hidden sm:inline">Advanced Filters</span>
                   <span className="sm:hidden">Filters</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
                   className="h-12 sm:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-xl px-4"
-                >
+              >
                   {viewMode === "grid" ? <List className="h-5 w-5" /> : <Grid className="h-5 w-5" />}
-                </Button>
+              </Button>
               </div>
             </div>
           </div>
@@ -379,12 +379,12 @@ export default function ListingsPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">Browse by Category</h2>
             <div className="flex flex-wrap justify-center gap-3 fade-in-up stagger-2">
               {categories.map((category, index) => {
-                const IconComponent = getCategoryIcon(category.id)
-                return (
-                  <Button
-                    key={category.id}
-                    variant={selectedCategory === category.id ? "default" : "outline"}
-                    onClick={() => setSelectedCategory(category.id)}
+              const IconComponent = getCategoryIcon(category.id)
+              return (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  onClick={() => setSelectedCategory(category.id)}
                     className={`h-12 sm:h-14 text-sm sm:text-base btn-animate transition-all duration-300 rounded-xl px-4 sm:px-6 ${
                       selectedCategory === category.id 
                         ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl scale-105' 
@@ -393,8 +393,8 @@ export default function ListingsPage() {
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <IconComponent className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 transition-transform duration-200 group-hover:scale-110" />
-                    <span className="hidden sm:inline">{category.name}</span>
-                    <span className="sm:hidden">{category.name.split(' ')[0]}</span>
+                  <span className="hidden sm:inline">{category.name}</span>
+                  <span className="sm:hidden">{category.name.split(' ')[0]}</span>
                     <Badge 
                       variant="secondary" 
                       className={`ml-2 sm:ml-3 text-xs px-2 py-1 transition-colors duration-200 ${
@@ -403,11 +403,11 @@ export default function ListingsPage() {
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'
                       }`}
                     >
-                      {category.count}
-                    </Badge>
-                  </Button>
-                )
-              })}
+                    {category.count}
+                  </Badge>
+                </Button>
+              )
+            })}
             </div>
           </div>
 

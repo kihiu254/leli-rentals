@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { useNotifications } from '@/lib/notification-context'
-import { Notification, NotificationType } from '@/lib/types/notification'
+import { notificationsService, Notification } from '@/lib/notifications-service'
+import { useAuthContext } from '@/lib/auth-context'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -18,85 +18,98 @@ interface NotificationPanelProps {
   onClose: () => void
 }
 
-const getNotificationIcon = (type: NotificationType) => {
+const getNotificationIcon = (type: string) => {
   switch (type) {
-    case NotificationType.BOOKING_REQUEST:
-    case NotificationType.BOOKING_CONFIRMED:
-    case NotificationType.BOOKING_CANCELLED:
-    case NotificationType.BOOKING_COMPLETED:
+    case 'booking':
       return <Calendar className="h-4 w-4 text-blue-500" />
-    case NotificationType.NEW_REVIEW:
-      return <Star className="h-4 w-4 text-yellow-500" />
-    case NotificationType.MESSAGE_RECEIVED:
-      return <MessageCircle className="h-4 w-4 text-green-500" />
-    case NotificationType.PAYMENT_RECEIVED:
-    case NotificationType.PAYMENT_FAILED:
+    case 'payment':
       return <CreditCard className="h-4 w-4 text-purple-500" />
-    case NotificationType.LISTING_APPROVED:
-    case NotificationType.LISTING_REJECTED:
+    case 'listing':
       return <Home className="h-4 w-4 text-orange-500" />
-    case NotificationType.ACCOUNT_VERIFIED:
-    case NotificationType.PASSWORD_CHANGED:
-    case NotificationType.PROFILE_UPDATED:
-      return <Settings className="h-4 w-4 text-gray-500" />
-    case NotificationType.SYSTEM_ANNOUNCEMENT:
+    case 'message':
+      return <MessageCircle className="h-4 w-4 text-green-500" />
+    case 'system':
       return <AlertCircle className="h-4 w-4 text-red-500" />
     default:
       return <Bell className="h-4 w-4 text-gray-500" />
   }
 }
 
-const getNotificationColor = (type: NotificationType) => {
+const getNotificationColor = (type: string) => {
   switch (type) {
-    case NotificationType.BOOKING_REQUEST:
-    case NotificationType.MESSAGE_RECEIVED:
+    case 'booking':
       return 'border-l-blue-500'
-    case NotificationType.BOOKING_CONFIRMED:
-    case NotificationType.PAYMENT_RECEIVED:
-    case NotificationType.ACCOUNT_VERIFIED:
-      return 'border-l-green-500'
-    case NotificationType.BOOKING_CANCELLED:
-    case NotificationType.PAYMENT_FAILED:
-    case NotificationType.LISTING_REJECTED:
-      return 'border-l-red-500'
-    case NotificationType.NEW_REVIEW:
-      return 'border-l-yellow-500'
-    case NotificationType.SYSTEM_ANNOUNCEMENT:
+    case 'payment':
       return 'border-l-purple-500'
+    case 'listing':
+      return 'border-l-orange-500'
+    case 'message':
+      return 'border-l-green-500'
+    case 'system':
+      return 'border-l-red-500'
     default:
       return 'border-l-gray-500'
   }
 }
 
 export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
-  const { 
-    notifications, 
-    unreadCount, 
-    isLoading, 
-    markAsRead, 
-    markAllAsRead, 
-    deleteNotification 
-  } = useNotifications()
-  
+  const { user } = useAuthContext()
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
   const [selectedNotification, setSelectedNotification] = useState<string | null>(null)
 
+  // Load notifications when panel opens
+  React.useEffect(() => {
+    if (isOpen && user?.uid) {
+      loadNotifications()
+    }
+  }, [isOpen, user?.uid])
+
+  const loadNotifications = async () => {
+    if (!user?.uid) return
+    
+    setIsLoading(true)
+    try {
+      const userNotifications = await notificationsService.getUserNotifications(user.uid)
+      setNotifications(userNotifications)
+      
+      const unread = await notificationsService.getUnreadCount(user.uid)
+      setUnreadCount(unread)
+    } catch (error) {
+      console.error('Error loading notifications:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleNotificationClick = async (notification: Notification) => {
-    if (!notification.isRead) {
-      await markAsRead(notification.id)
+    if (!notification.read) {
+      await notificationsService.markAsRead(notification.id)
+      setNotifications(prev => 
+        prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
+      )
+      setUnreadCount(prev => Math.max(0, prev - 1))
     }
     setSelectedNotification(notification.id)
   }
 
   const handleDeleteNotification = async (notificationId: string, event: React.MouseEvent) => {
     event.stopPropagation()
-    await deleteNotification(notificationId)
+    // For now, we'll just mark as read since we don't have delete functionality
+    await notificationsService.markAsRead(notificationId)
+    setNotifications(prev => prev.filter(n => n.id !== notificationId))
+    setUnreadCount(prev => Math.max(0, prev - 1))
     if (selectedNotification === notificationId) {
       setSelectedNotification(null)
     }
   }
 
   const handleMarkAllAsRead = async () => {
-    await markAllAsRead()
+    if (!user?.uid) return
+    await notificationsService.markAllAsRead(user.uid)
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+    setUnreadCount(0)
   }
 
   if (!isOpen) return null
@@ -158,7 +171,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                         className={cn(
                           "p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-4",
                           getNotificationColor(notification.type),
-                          !notification.isRead && "bg-blue-50/50 dark:bg-blue-900/20",
+                          !notification.read && "bg-blue-50/50 dark:bg-blue-900/20",
                           selectedNotification === notification.id && "bg-orange-50 dark:bg-orange-900/20"
                         )}
                         onClick={() => handleNotificationClick(notification)}
@@ -173,7 +186,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                               <div className="flex-1">
                                 <h4 className={cn(
                                   "text-sm font-medium",
-                                  !notification.isRead ? "text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"
+                                  !notification.read ? "text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"
                                 )}>
                                   {notification.title}
                                 </h4>
@@ -185,7 +198,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                                   <span className="text-xs text-gray-500">
                                     {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
                                   </span>
-                                  {!notification.isRead && (
+                                  {!notification.read && (
                                     <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
                                   )}
                                 </div>
