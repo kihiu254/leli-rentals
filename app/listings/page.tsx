@@ -308,16 +308,32 @@ export default function ListingsPage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-8 sm:py-12 bg-gradient-to-r from-blue-600 to-purple-600 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-purple-600/90"></div>
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/95 via-purple-600/95 to-indigo-700/95"></div>
+        <div className="absolute inset-0 bg-[url('/luxury-cars-in-modern-showroom.jpg')] bg-cover bg-center opacity-20"></div>
         <div className="container mx-auto px-4 sm:px-6 max-w-6xl relative z-10">
-          <div className="text-center mb-8 fade-in-up">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+          <div className="text-center mb-12 fade-in-up">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight">
               Discover Amazing Rentals
             </h1>
-            <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto opacity-90">
-              Find the perfect rental for your needs. From vehicles to equipment, homes to electronics.
+            <p className="text-xl sm:text-2xl text-blue-100 max-w-3xl mx-auto opacity-90 leading-relaxed mb-8">
+              Find the perfect rental for your needs. From luxury vehicles to premium equipment, 
+              beautiful homes to cutting-edge electronics.
             </p>
+            <div className="flex flex-wrap justify-center gap-4 text-sm sm:text-base">
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span>140+ Items Available</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <span>7 Categories</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                <span>Instant Booking</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -326,102 +342,130 @@ export default function ListingsPage() {
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-6 sm:py-8">
         {/* Search and Filters */}
         <div className="mb-8 sm:mb-12 fade-in-up stagger-1">
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1 group">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 group-focus-within:text-blue-500 transition-colors duration-200" />
-              <Input
-                placeholder="Search rentals..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10 sm:h-12 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 focus-enhanced"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="h-10 sm:h-12 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-              >
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Filters
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-                className="h-10 sm:h-12 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-              >
-                {viewMode === "grid" ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
-              </Button>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <div className="flex flex-col lg:flex-row gap-4 mb-6">
+              <div className="relative flex-1 group">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 group-focus-within:text-blue-500 transition-colors duration-200" />
+                <Input
+                  placeholder="Search rentals, locations, or categories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-12 sm:h-14 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 focus-enhanced rounded-xl text-base"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="h-12 sm:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-xl px-6"
+                >
+                  <SlidersHorizontal className="h-5 w-5 mr-2" />
+                  <span className="hidden sm:inline">Advanced Filters</span>
+                  <span className="sm:hidden">Filters</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+                  className="h-12 sm:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-xl px-4"
+                >
+                  {viewMode === "grid" ? <List className="h-5 w-5" /> : <Grid className="h-5 w-5" />}
+                </Button>
+              </div>
             </div>
           </div>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2 mb-6 fade-in-up stagger-2">
-            {categories.map((category, index) => {
-              const IconComponent = getCategoryIcon(category.id)
-              return (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`h-8 sm:h-10 text-xs sm:text-sm btn-animate transition-all duration-200 ${
-                    selectedCategory === category.id 
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg' 
-                      : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <IconComponent className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 transition-transform duration-200 group-hover:scale-110" />
-                  <span className="hidden sm:inline">{category.name}</span>
-                  <span className="sm:hidden">{category.name.split(' ')[0]}</span>
-                  <Badge 
-                    variant="secondary" 
-                    className={`ml-1 sm:ml-2 text-xs px-1 py-0 transition-colors duration-200 ${
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">Browse by Category</h2>
+            <div className="flex flex-wrap justify-center gap-3 fade-in-up stagger-2">
+              {categories.map((category, index) => {
+                const IconComponent = getCategoryIcon(category.id)
+                return (
+                  <Button
+                    key={category.id}
+                    variant={selectedCategory === category.id ? "default" : "outline"}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`h-12 sm:h-14 text-sm sm:text-base btn-animate transition-all duration-300 rounded-xl px-4 sm:px-6 ${
                       selectedCategory === category.id 
-                        ? 'bg-white/20 text-white' 
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl scale-105' 
+                        : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
                     }`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    {category.count}
-                  </Badge>
-                </Button>
-              )
-            })}
+                    <IconComponent className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 transition-transform duration-200 group-hover:scale-110" />
+                    <span className="hidden sm:inline">{category.name}</span>
+                    <span className="sm:hidden">{category.name.split(' ')[0]}</span>
+                    <Badge 
+                      variant="secondary" 
+                      className={`ml-2 sm:ml-3 text-xs px-2 py-1 transition-colors duration-200 ${
+                        selectedCategory === category.id 
+                          ? 'bg-white/20 text-white border-white/30' 
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'
+                      }`}
+                    >
+                      {category.count}
+                    </Badge>
+                  </Button>
+                )
+              })}
+            </div>
           </div>
 
           {/* Advanced Filters */}
           {showFilters && (
-            <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg border mb-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-8 fade-in-up">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Advanced Filters</h3>
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowFilters(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  ×
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Price Range</label>
-                  <div className="flex gap-2">
+                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Price Range (KSh)</label>
+                  <div className="flex gap-3">
                     <Input
                       type="number"
                       placeholder="Min"
                       value={priceRange.min}
                       onChange={(e) => setPriceRange({ ...priceRange, min: Number(e.target.value) })}
-                      className="h-8 sm:h-10"
+                      className="h-12 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl"
                     />
                     <Input
                       type="number"
                       placeholder="Max"
                       value={priceRange.max}
                       onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
-                      className="h-8 sm:h-10"
+                      className="h-12 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Location</label>
-                  <Input placeholder="Enter location" className="h-8 sm:h-10" />
+                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Location</label>
+                  <Input 
+                    placeholder="Enter location" 
+                    className="h-12 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl" 
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Availability</label>
-                  <select className="w-full h-8 sm:h-10 px-3 border border-gray-300 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600" aria-label="Filter by availability">
+                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Availability</label>
+                  <select className="w-full h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20" aria-label="Filter by availability">
                     <option>Available Now</option>
                     <option>Available This Week</option>
                     <option>Available This Month</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Rating</label>
+                  <select className="w-full h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20" aria-label="Filter by rating">
+                    <option>Any Rating</option>
+                    <option>4+ Stars</option>
+                    <option>4.5+ Stars</option>
+                    <option>5 Stars</option>
                   </select>
                 </div>
               </div>
@@ -429,13 +473,13 @@ export default function ListingsPage() {
           )}
 
           {/* Sort Options */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Sort by:</span>
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort by:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="h-10 sm:h-12 px-3 sm:px-4 pr-8 border border-gray-300 rounded-lg bg-white text-sm dark:bg-gray-700 dark:border-gray-600"
+                className="h-12 px-4 pr-8 border border-gray-300 rounded-xl bg-white text-sm dark:bg-gray-700 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200"
                 aria-label="Sort listings by"
               >
                 <option value="newest">Newest First</option>
@@ -445,8 +489,14 @@ export default function ListingsPage() {
                 <option value="rating">Highest Rated</option>
               </select>
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {listings.length} results
+            <div className="flex items-center gap-4">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Showing <span className="font-bold text-blue-600 dark:text-blue-400">{listings.length}</span> results
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span>Live Results</span>
+              </div>
             </div>
           </div>
         </div>

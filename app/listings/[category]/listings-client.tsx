@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -31,6 +32,7 @@ export function ListingsClient({
   listings, 
   locations 
 }: ListingsClientProps) {
+  const router = useRouter()
   const [priceRange, setPriceRange] = useState([0, 1000])
   const [selectedLocation, setSelectedLocation] = useState<string>("any")
   const [dateFrom, setDateFrom] = useState<Date>()
@@ -38,6 +40,13 @@ export function ListingsClient({
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [sortBy, setSortBy] = useState<string>("featured")
+
+  // Check if category is a numeric ID and redirect to details page
+  useEffect(() => {
+    if (/^\d+$/.test(category)) {
+      router.replace(`/listings/details/${category}`)
+    }
+  }, [category, router])
 
   // Filter and sort listings
   const filteredAndSortedListings = useMemo(() => {
@@ -247,7 +256,7 @@ export function ListingsClient({
               )}
             >
               {filteredAndSortedListings.map((listing) => (
-                <Link key={listing.id} href={`/items/${listing.id}`}>
+                <Link key={listing.id} href={`/listings/details/${listing.id}`}>
                   <Card
                     className={cn(
                       "group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary/50",

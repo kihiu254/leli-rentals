@@ -120,6 +120,7 @@ interface ListingPageProps {
 export default async function ListingPage(props: ListingPageProps) {
   const params = await props.params;
   const category = params.category
+  
   const categoryTitle = categoryTitles[category as keyof typeof categoryTitles] || `Listings - ${category.charAt(0).toUpperCase() + category.slice(1)}`
   const categoryDescription = categoryDescriptions[category as keyof typeof categoryDescriptions] || `Browse ${category} listings and find what you're looking for`
   const listings = getListingsByCategory(category)
