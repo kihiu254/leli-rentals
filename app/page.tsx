@@ -31,7 +31,14 @@ export default function HomePage() {
       <Header />
 
       <section
-        className="relative h-[70vh] sm:h-[80vh] md:h-screen flex items-center justify-center hero-background"
+        className="relative h-[70vh] sm:h-[80vh] md:h-screen flex items-center justify-center"
+        style={{
+          backgroundImage: "url('/luxury-cars-in-modern-showroom.jpg'), linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: "scroll"
+        }}
       >
         <div className="absolute inset-0 bg-black/40 dark:bg-black/60 transition-all duration-500"></div>
 
