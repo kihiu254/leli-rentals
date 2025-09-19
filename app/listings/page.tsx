@@ -313,18 +313,30 @@ export default function ListingsPage() {
       console.log('Booking created successfully with ID:', bookingId)
       
       // Enhanced booking success notification
-      toast({
+      const bookingToast = toast({
         title: "🎉 Booking Successful!",
         description: `"${listing.title}" booked for ${duration} day${duration > 1 ? 's' : ''}`,
-        duration: 5000,
+        duration: 3000,
         action: (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => router.push('/profile/bookings')}
-          >
-            View Bookings
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                bookingToast.dismiss()
+                router.push('/profile/bookings')
+              }}
+            >
+              View Bookings
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => bookingToast.dismiss()}
+            >
+              Dismiss
+            </Button>
+          </div>
         ),
       })
 
@@ -335,10 +347,11 @@ export default function ListingsPage() {
         console.log('Browser notification not available:', error)
       }
       
-      // Redirect to bookings page after a short delay
+      // Auto-dismiss toast and redirect after delay
       setTimeout(() => {
+        bookingToast.dismiss()
         router.push('/profile/bookings')
-      }, 3000)
+      }, 4000)
     } catch (error) {
       console.error('Error creating booking:', error)
         toast({

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -45,6 +46,7 @@ export function ItemDetailClient({ listing }: ItemDetailClientProps) {
   const [selectedDates, setSelectedDates] = useState<{ from?: Date; to?: Date }>({})
   const [isBookingOpen, setIsBookingOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
   const [bookingData, setBookingData] = useState({
     name: "",
     email: "",
@@ -82,7 +84,13 @@ export function ItemDetailClient({ listing }: ItemDetailClientProps) {
       })
       setIsLoading(false)
       setIsBookingOpen(false)
-      alert("Booking request submitted successfully!")
+      
+      // Show success toast
+      toast({
+        title: "🎉 Booking Request Submitted!",
+        description: `Your booking request for "${listing.title}" has been sent successfully.`,
+        duration: 3000,
+      })
     }, 2000)
   }
 
