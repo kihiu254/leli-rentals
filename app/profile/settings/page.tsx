@@ -72,7 +72,7 @@ export default function AccountSettingsPage() {
   // Load user settings on component mount
   useEffect(() => {
     const loadUserSettings = async () => {
-      if (!user) return
+      if (!user || !user.id) return
       
       setIsLoading(true)
       try {
@@ -128,7 +128,7 @@ export default function AccountSettingsPage() {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user) {
+    if (!user || !user.id) {
       toast({
         title: "Error",
         description: "You must be logged in to update your profile",
@@ -234,7 +234,7 @@ export default function AccountSettingsPage() {
   }
 
   const handleNotificationToggle = async (setting: string, value: boolean) => {
-    if (!user) return
+    if (!user || !user.id) return
     
     try {
       await userSettingsService.updateNotificationSettings(user.id, { [setting]: value })
@@ -261,7 +261,7 @@ export default function AccountSettingsPage() {
   }
 
   const handlePrivacyToggle = async (setting: string, value: any) => {
-    if (!user) return
+    if (!user || !user.id) return
     
     try {
       await userSettingsService.updatePrivacySettings(user.id, { [setting]: value })

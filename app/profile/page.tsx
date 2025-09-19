@@ -154,7 +154,7 @@ export default function ProfilePage() {
   // Load user data
   useEffect(() => {
     const loadUserData = async () => {
-      if (!user) return
+      if (!user || !user.id) return
 
       try {
         // Load user profile
@@ -205,7 +205,7 @@ export default function ProfilePage() {
   // Handle image upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (!file || !user) return
+    if (!file || !user || !user.id) return
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       toast({
@@ -301,7 +301,7 @@ export default function ProfilePage() {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user) {
+    if (!user || !user.id) {
       toast({
         title: "Error",
         description: "You must be logged in to update your profile.",

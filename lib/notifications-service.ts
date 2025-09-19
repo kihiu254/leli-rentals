@@ -7,6 +7,7 @@ export interface Notification {
   type: 'booking' | 'payment' | 'system' | 'listing' | 'message'
   title: string
   message: string
+  link?: string
   data?: {
     bookingId?: string
     listingId?: string
@@ -24,6 +25,7 @@ export interface NotificationCreateData {
   type: 'booking' | 'payment' | 'system' | 'listing' | 'message'
   title: string
   message: string
+  link?: string
   data?: {
     bookingId?: string
     listingId?: string

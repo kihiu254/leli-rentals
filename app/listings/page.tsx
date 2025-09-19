@@ -34,6 +34,7 @@ import { useAuthContext } from "@/components/auth-provider"
 import { useInteractions } from "@/lib/hooks/use-interactions"
 import { useToast } from "@/hooks/use-toast"
 import { bookingsService } from "@/lib/bookings-service"
+import { notificationService } from "@/lib/notification-service"
 
 // Mock listings are now imported from lib/mock-listings-data.ts
 
@@ -63,6 +64,11 @@ export default function ListingsPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
+  
+  // Enhanced filter states
+  const [availabilityFilter, setAvailabilityFilter] = useState("any")
+  const [ratingFilter, setRatingFilter] = useState("any")
+  const [locationFilter, setLocationFilter] = useState("")
 
   // Fix hydration issues
   useEffect(() => {
@@ -97,10 +103,33 @@ export default function ListingsPage() {
       )
     }
 
+    // Filter by location
+    if (locationFilter) {
+      const location = locationFilter.toLowerCase()
+      filteredListings = filteredListings.filter(listing =>
+        listing.location.toLowerCase().includes(location)
+      )
+    }
+
     // Filter by price range
     filteredListings = filteredListings.filter(listing =>
       listing.price >= priceRange.min && listing.price <= priceRange.max
     )
+
+    // Filter by rating
+    if (ratingFilter !== "any") {
+      const minRating = parseFloat(ratingFilter)
+      filteredListings = filteredListings.filter(listing => listing.rating >= minRating)
+    }
+
+    // Filter by availability (mock implementation)
+    if (availabilityFilter !== "any") {
+      filteredListings = filteredListings.filter(listing => {
+        // Mock availability logic - in real app, this would check actual availability
+        const isAvailable = Math.random() > 0.3 // 70% chance of being available
+        return isAvailable
+      })
+    }
 
     // Sort listings
     filteredListings.sort((a, b) => {
@@ -115,13 +144,15 @@ export default function ListingsPage() {
           return b.price - a.price
         case "rating":
           return b.rating - a.rating
+        case "popularity":
+          return (b.reviews || 0) - (a.reviews || 0)
         default:
           return 0
       }
     })
 
     setListings(filteredListings)
-  }, [selectedCategory, searchQuery, sortBy, priceRange])
+  }, [selectedCategory, searchQuery, sortBy, priceRange, availabilityFilter, ratingFilter, locationFilter])
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -237,6 +268,15 @@ export default function ListingsPage() {
       return
     }
 
+    if (!listing.id) {
+      toast({
+        title: "Error",
+        description: "Invalid listing data.",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       // Create a booking with default dates (today + 1 day)
       const today = new Date()
@@ -270,16 +310,43 @@ export default function ListingsPage() {
       }
 
       await bookingsService.createBooking(bookingData)
+      
+      // Enhanced booking success notification
       toast({
-        title: "🎉 Booking Created!",
-        description: "Your booking has been created and is pending confirmation. You can find it in your bookings page.",
-        duration: 5000,
+        title: "🎉 Booking Successful!",
+        description: `You've successfully booked "${listing.title}" for ${duration} day${duration > 1 ? 's' : ''}. Check your bookings page for details.`,
+        duration: 8000,
+        action: (
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => router.push('/profile/bookings')}
+            >
+              View Bookings
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => router.push(`/listings/details/${listing.id}`)}
+            >
+              View Details
+            </Button>
+          </div>
+        ),
       })
+
+      // Show browser notification
+      try {
+        await notificationService.showBookingSuccessNotification(listing.title, duration)
+      } catch (error) {
+        console.log('Browser notification not available:', error)
+      }
       
       // Redirect to bookings page after a short delay
       setTimeout(() => {
         router.push('/profile/bookings')
-      }, 2000)
+      }, 3000)
     } catch (error) {
       console.error('Error creating booking:', error)
         toast({
@@ -319,25 +386,28 @@ export default function ListingsPage() {
         <div className="absolute inset-0 bg-[url('/luxury-cars-in-modern-showroom.jpg')] bg-cover bg-center opacity-20"></div>
         <div className="container mx-auto px-4 sm:px-6 max-w-6xl relative z-10">
           <div className="text-center mb-12 fade-in-up">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight px-4">
               Discover Amazing Rentals
             </h1>
-            <p className="text-xl sm:text-2xl text-blue-100 max-w-3xl mx-auto opacity-90 leading-relaxed mb-8">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-blue-100 max-w-3xl mx-auto opacity-90 leading-relaxed mb-6 sm:mb-8 px-4">
               Find the perfect rental for your needs. From luxury vehicles to premium equipment, 
               beautiful homes to cutting-edge electronics.
             </p>
-            <div className="flex flex-wrap justify-center gap-4 text-sm sm:text-base">
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span>140+ Items Available</span>
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-4 text-xs sm:text-sm md:text-base px-4">
+              <div className="flex items-center gap-1 sm:gap-2 bg-white/20 backdrop-blur-sm rounded-full px-2 sm:px-4 py-1 sm:py-2">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="hidden xs:inline">140+ Items Available</span>
+                <span className="xs:hidden">140+ Items</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                <span>7 Categories</span>
+              <div className="flex items-center gap-1 sm:gap-2 bg-white/20 backdrop-blur-sm rounded-full px-2 sm:px-4 py-1 sm:py-2">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <span className="hidden xs:inline">7 Categories</span>
+                <span className="xs:hidden">7 Cats</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                <span>Instant Booking</span>
+              <div className="flex items-center gap-1 sm:gap-2 bg-white/20 backdrop-blur-sm rounded-full px-2 sm:px-4 py-1 sm:py-2">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                <span className="hidden xs:inline">Instant Booking</span>
+                <span className="xs:hidden">Instant</span>
               </div>
             </div>
           </div>
@@ -348,42 +418,47 @@ export default function ListingsPage() {
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-6 sm:py-8">
         {/* Search and Filters */}
         <div className="mb-8 sm:mb-12 fade-in-up stagger-1">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6 sm:mb-8">
+            <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div className="relative flex-1 group">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 group-focus-within:text-blue-500 transition-colors duration-200" />
+                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5 group-focus-within:text-blue-500 transition-colors duration-200" />
               <Input
-                  placeholder="Search rentals, locations, or categories..."
+                  placeholder="Search rentals, locations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-12 sm:h-14 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 focus-enhanced rounded-xl text-base"
+                  className="pl-10 sm:pl-12 h-10 sm:h-12 md:h-14 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 focus-enhanced rounded-lg sm:rounded-xl text-sm sm:text-base"
               />
             </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
               <Button
                 variant="outline"
                 onClick={() => setShowFilters(!showFilters)}
-                  className="h-12 sm:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-xl px-6"
+                  className="h-10 sm:h-12 md:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-lg sm:rounded-xl px-3 sm:px-6"
               >
-                  <SlidersHorizontal className="h-5 w-5 mr-2" />
-                  <span className="hidden sm:inline">Advanced Filters</span>
-                  <span className="sm:hidden">Filters</span>
+                  <SlidersHorizontal className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline text-sm sm:text-base">Advanced Filters</span>
+                  <span className="sm:hidden text-sm">Filters</span>
+                  {(locationFilter || availabilityFilter !== "any" || ratingFilter !== "any" || priceRange.min > 0 || priceRange.max < 100000) && (
+                    <span className="ml-1 sm:ml-2 bg-blue-500 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                      {[locationFilter, availabilityFilter !== "any" ? "avail" : "", ratingFilter !== "any" ? "rating" : "", priceRange.min > 0 || priceRange.max < 100000 ? "price" : ""].filter(Boolean).length}
+                    </span>
+                  )}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-                  className="h-12 sm:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-xl px-4"
+                  className="h-10 sm:h-12 md:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-lg sm:rounded-xl px-3 sm:px-4"
               >
-                  {viewMode === "grid" ? <List className="h-5 w-5" /> : <Grid className="h-5 w-5" />}
+                  {viewMode === "grid" ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Grid className="h-4 w-4 sm:h-5 sm:w-5" />}
               </Button>
               </div>
             </div>
           </div>
 
           {/* Category Tabs */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">Browse by Category</h2>
-            <div className="flex flex-wrap justify-center gap-3 fade-in-up stagger-2">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 sm:mb-6 text-center px-4">Browse by Category</h2>
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 fade-in-up stagger-2 px-2 sm:px-0">
               {categories.map((category, index) => {
               const IconComponent = getCategoryIcon(category.id)
               return (
@@ -391,19 +466,19 @@ export default function ListingsPage() {
                   key={category.id}
                   variant={selectedCategory === category.id ? "default" : "outline"}
                   onClick={() => setSelectedCategory(category.id)}
-                    className={`h-12 sm:h-14 text-sm sm:text-base btn-animate transition-all duration-300 rounded-xl px-4 sm:px-6 ${
+                    className={`h-10 sm:h-12 md:h-14 text-xs sm:text-sm md:text-base btn-animate transition-all duration-300 rounded-lg sm:rounded-xl px-2 sm:px-4 md:px-6 ${
                       selectedCategory === category.id 
                         ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl scale-105' 
                         : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
                     }`}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <IconComponent className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 transition-transform duration-200 group-hover:scale-110" />
+                    <IconComponent className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mr-1 sm:mr-2 md:mr-3 transition-transform duration-200 group-hover:scale-110" />
                   <span className="hidden sm:inline">{category.name}</span>
-                  <span className="sm:hidden">{category.name.split(' ')[0]}</span>
+                  <span className="sm:hidden text-xs">{category.name.split(' ')[0]}</span>
                     <Badge 
                       variant="secondary" 
-                      className={`ml-2 sm:ml-3 text-xs px-2 py-1 transition-colors duration-200 ${
+                      className={`ml-1 sm:ml-2 md:ml-3 text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 transition-colors duration-200 ${
                         selectedCategory === category.id 
                           ? 'bg-white/20 text-white border-white/30' 
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'
@@ -422,13 +497,28 @@ export default function ListingsPage() {
             <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-8 fade-in-up">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Advanced Filters</h3>
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowFilters(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  ×
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setLocationFilter("")
+                      setAvailabilityFilter("any")
+                      setRatingFilter("any")
+                      setPriceRange({ min: 0, max: 100000 })
+                      setSortBy("newest")
+                    }}
+                    className="text-sm px-3 py-1 h-8"
+                  >
+                    Clear All
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowFilters(false)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    ×
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
@@ -452,26 +542,55 @@ export default function ListingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Location</label>
-                  <Input 
-                    placeholder="Enter location" 
-                    className="h-12 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl" 
+                  <Input
+                    placeholder="Enter city or area..."
+                    value={locationFilter}
+                    onChange={(e) => setLocationFilter(e.target.value)}
+                    className="h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Availability</label>
-                  <select className="w-full h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20" aria-label="Filter by availability">
-                    <option>Available Now</option>
-                    <option>Available This Week</option>
-                    <option>Available This Month</option>
+                  <select 
+                    value={availabilityFilter}
+                    onChange={(e) => setAvailabilityFilter(e.target.value)}
+                    className="w-full h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20" 
+                    aria-label="Filter by availability"
+                  >
+                    <option value="any">Any Availability</option>
+                    <option value="now">Available Now</option>
+                    <option value="week">Available This Week</option>
+                    <option value="month">Available This Month</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Rating</label>
-                  <select className="w-full h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20" aria-label="Filter by rating">
-                    <option>Any Rating</option>
-                    <option>4+ Stars</option>
-                    <option>4.5+ Stars</option>
-                    <option>5 Stars</option>
+                  <select 
+                    value={ratingFilter}
+                    onChange={(e) => setRatingFilter(e.target.value)}
+                    className="w-full h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20" 
+                    aria-label="Filter by rating"
+                  >
+                    <option value="any">Any Rating</option>
+                    <option value="4">4+ Stars</option>
+                    <option value="4.5">4.5+ Stars</option>
+                    <option value="5">5 Stars</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Sort By</label>
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20" 
+                    aria-label="Sort results"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="popularity">Most Popular</option>
                   </select>
                 </div>
               </div>
@@ -510,7 +629,7 @@ export default function ListingsPage() {
         {/* Listings Grid */}
         <div className={`grid gap-3 sm:gap-4 md:gap-6 ${
           viewMode === "grid" 
-            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+            ? "grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4" 
             : "grid-cols-1"
         }`}>
           {listings.map((listing, index) => {
@@ -574,25 +693,25 @@ export default function ListingsPage() {
                   </Button>
                 </div>
 
-                <CardContent className="p-4 sm:p-6">
-                  <div className="space-y-3">
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <div className="space-y-2 sm:space-y-3">
                     <div>
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-1">
+                      <h3 className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 dark:text-gray-100 mb-1 line-clamp-2">
                         {listing.title}
                       </h3>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <MapPin className="h-4 w-4" />
-                      <span>{listing.location}</span>
+                    <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">{listing.location}</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <div className="flex items-center gap-0.5 sm:gap-1">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-4 w-4 ${
+                            className={`h-3 w-3 sm:h-4 sm:w-4 ${
                               i < Math.floor(listing.rating)
                                 ? "text-yellow-400 fill-current"
                                 : "text-gray-300 dark:text-gray-600"
@@ -600,68 +719,70 @@ export default function ListingsPage() {
                           />
                         ))}
                       </div>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {listing.rating} ({listing.reviews} reviews)
+                      <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        {listing.rating} ({listing.reviews})
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
                         <AvatarImage src={listing.owner.avatar} alt={listing.owner.name} />
-                        <AvatarFallback>{listing.owner.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="text-xs">{listing.owner.name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                         {listing.owner.name}
                       </span>
                       {listing.owner.verified && (
-                        <Badge variant="secondary" className="text-xs px-1 py-0">
+                        <Badge variant="secondary" className="text-xs px-1 py-0 hidden sm:inline-flex">
                           Verified
                         </Badge>
                       )}
                     </div>
 
                     <div className="flex flex-wrap gap-1">
-                      {listing.amenities.slice(0, 3).map((amenity, index) => (
-                        <Badge key={index} variant="outline" className="text-xs px-2 py-1">
+                      {listing.amenities.slice(0, 2).map((amenity, index) => (
+                        <Badge key={index} variant="outline" className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1">
                           {amenity}
                         </Badge>
                       ))}
-                      {listing.amenities.length > 3 && (
-                        <Badge variant="outline" className="text-xs px-2 py-1">
-                          +{listing.amenities.length - 3} more
+                      {listing.amenities.length > 2 && (
+                        <Badge variant="outline" className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1">
+                          +{listing.amenities.length - 2}
                         </Badge>
                       )}
                     </div>
 
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-1 sm:gap-2 flex-wrap">
                       <Button 
                         size="sm" 
-                        className="bg-blue-600 hover:bg-blue-700 text-white btn-animate shadow-lg hover:shadow-xl transition-all duration-200"
+                        className="bg-blue-600 hover:bg-blue-700 text-white btn-animate shadow-lg hover:shadow-xl transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3"
                         onClick={() => listing.id && handleViewDetails(listing.id)}
                       >
-                        View Details
+                        <span className="hidden sm:inline">View Details</span>
+                        <span className="sm:hidden">View</span>
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => listing.id && handleSave(listing.id)}
                         disabled={listing.id ? interactions[listing.id]?.loading : false}
-                        className={`btn-animate transition-all duration-200 ${
+                        className={`btn-animate transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 ${
                           listing.id && interactions[listing.id]?.saved 
                             ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30' 
                             : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
-                        <Heart className={`h-4 w-4 mr-1 transition-transform duration-200 ${listing.id && interactions[listing.id]?.saved ? 'fill-current text-green-600 dark:text-green-400' : ''}`} />
-                        {listing.id && interactions[listing.id]?.saved ? 'Saved' : 'Save'}
+                        <Heart className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 transition-transform duration-200 ${listing.id && interactions[listing.id]?.saved ? 'fill-current text-green-600 dark:text-green-400' : ''}`} />
+                        <span className="hidden sm:inline">{listing.id && interactions[listing.id]?.saved ? 'Saved' : 'Save'}</span>
                       </Button>
                       <Button 
                         size="sm"
                         onClick={() => handleBookNow(listing)}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white btn-animate shadow-lg hover:shadow-xl transition-all duration-200"
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white btn-animate shadow-lg hover:shadow-xl transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3"
                       >
-                        <Calendar className="h-4 w-4 mr-1" />
-                        Book Now
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                        <span className="hidden sm:inline">Book Now</span>
+                        <span className="sm:hidden">Book</span>
                       </Button>
                     </div>
                   </div>

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { Search, Moon, Sun, User, Bell, ChevronDown } from "lucide-react"
+import { Search, Moon, Sun, User, Bell, ChevronDown, Menu, X } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from "@/lib/auth"
 import { notificationsService } from '@/lib/notifications-service'
@@ -27,6 +27,7 @@ export function Header() {
   const [mounted, setMounted] = useState(false)
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const auth = useAuth()
 
   useEffect(() => {
@@ -116,6 +117,16 @@ export function Header() {
             Contact
           </Link>
         </nav>
+
+        {/* Mobile Menu Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="lg:hidden h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200"
+        >
+          {isMobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
+        </Button>
 
         {/* Search Bar */}
         <div className="hidden md:flex items-center gap-2 sm:gap-3 flex-1 max-w-sm mx-2">
@@ -291,6 +302,65 @@ export function Header() {
           )}
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+          <div className="container mx-auto px-4 py-4 max-w-7xl">
+            <nav className="flex flex-col space-y-4">
+              <Link 
+                href="/" 
+                className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link 
+                href="/categories" 
+                className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Categories
+              </Link>
+              <Link 
+                href="/get-started" 
+                className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Get Started
+              </Link>
+              <Link 
+                href="/about" 
+                className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link 
+                href="/contact" 
+                className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+            </nav>
+            
+            {/* Mobile Search */}
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search Rentals"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="pl-10 h-10 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-orange-500 focus:ring-orange-500 transition-all duration-200"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Notification Panel */}
       <NotificationPanel 

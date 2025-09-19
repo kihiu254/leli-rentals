@@ -1,14 +1,14 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { useAuth } from './auth'
+import { useAuthContext } from './auth-context'
 import { Notification, NotificationContextType } from './types/notification'
-import { notificationService } from './notification-service'
+import { notificationsService, Notification as ServiceNotification } from './notifications-service'
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth()
+  const { user } = useAuthContext()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -23,32 +23,39 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     setIsLoading(true)
 
-    // Subscribe to notifications
-    const unsubscribeNotifications = notificationService.subscribeToNotifications(
-      user.id,
-      (newNotifications) => {
-        setNotifications(newNotifications)
+    // Load notifications
+    const loadNotifications = async () => {
+      try {
+        const userNotifications = await notificationsService.getUserNotifications(user.uid)
+        // Convert ServiceNotification to Notification type
+        const convertedNotifications: Notification[] = userNotifications.map(serviceNotif => ({
+          id: serviceNotif.id,
+          userId: serviceNotif.userId,
+          type: serviceNotif.type as any, // Convert string to NotificationType
+          title: serviceNotif.title,
+          message: serviceNotif.message,
+          link: serviceNotif.link,
+          isRead: serviceNotif.read,
+          createdAt: serviceNotif.createdAt,
+          updatedAt: serviceNotif.updatedAt
+        }))
+        setNotifications(convertedNotifications)
+        
+        const unread = await notificationsService.getUnreadCount(user.uid)
+        setUnreadCount(unread)
+      } catch (error) {
+        console.error('Error loading notifications:', error)
+      } finally {
         setIsLoading(false)
       }
-    )
-
-    // Subscribe to unread count
-    const unsubscribeUnreadCount = notificationService.subscribeToUnreadCount(
-      user.id,
-      (count) => {
-        setUnreadCount(count)
-      }
-    )
-
-    return () => {
-      unsubscribeNotifications()
-      unsubscribeUnreadCount()
     }
+
+    loadNotifications()
   }, [user])
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      await notificationService.markAsRead(notificationId)
+      await notificationsService.markAsRead(notificationId)
       // Update local state immediately for better UX
       setNotifications(prev => 
         prev.map(notification => 
@@ -67,7 +74,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!user) return
     
     try {
-      await notificationService.markAllAsRead(user.id)
+      await notificationsService.markAllAsRead(user.uid)
       // Update local state immediately
       setNotifications(prev => 
         prev.map(notification => ({ ...notification, isRead: true }))
@@ -80,7 +87,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const deleteNotification = useCallback(async (notificationId: string) => {
     try {
-      await notificationService.deleteNotification(notificationId)
+      // For now, just mark as read since delete functionality isn't implemented
+      await notificationsService.markAsRead(notificationId)
       // Update local state immediately
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
       // Update unread count if the deleted notification was unread
@@ -98,9 +106,21 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     
     setIsLoading(true)
     try {
-      const newNotifications = await notificationService.getUserNotifications(user.id)
-      setNotifications(newNotifications)
-      const count = await notificationService.getUnreadCount(user.id)
+      const userNotifications = await notificationsService.getUserNotifications(user.uid)
+      // Convert ServiceNotification to Notification type
+      const convertedNotifications: Notification[] = userNotifications.map(serviceNotif => ({
+        id: serviceNotif.id,
+        userId: serviceNotif.userId,
+        type: serviceNotif.type as any, // Convert string to NotificationType
+        title: serviceNotif.title,
+        message: serviceNotif.message,
+        link: serviceNotif.link,
+        isRead: serviceNotif.read,
+        createdAt: serviceNotif.createdAt,
+        updatedAt: serviceNotif.updatedAt
+      }))
+      setNotifications(convertedNotifications)
+      const count = await notificationsService.getUnreadCount(user.uid)
       setUnreadCount(count)
     } catch (error) {
       console.error('Error refreshing notifications:', error)
@@ -113,13 +133,13 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!user) return
     
     try {
-      await notificationService.createNotification(
-        notificationData.userId,
-        notificationData.type,
-        notificationData.title,
-        notificationData.message,
-        notificationData.link
-      )
+      await notificationsService.createNotification({
+        userId: notificationData.userId,
+        type: notificationData.type as 'booking' | 'payment' | 'system' | 'listing' | 'message',
+        title: notificationData.title,
+        message: notificationData.message,
+        link: notificationData.link
+      })
       // Refresh notifications to get the new one
       await refreshNotifications()
     } catch (error) {
