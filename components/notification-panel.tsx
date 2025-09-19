@@ -120,7 +120,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose}>
       <div 
-        className="fixed right-4 top-16 w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+        className="fixed right-2 sm:right-4 top-16 w-[calc(100vw-1rem)] sm:w-96 max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
         onClick={(e) => e.stopPropagation()}
       >
         <Card className="border-0 shadow-none">
@@ -135,29 +135,29 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                   </Badge>
                 )}
               </CardTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={loadNotifications}
-                  className="text-xs"
+                  className="text-xs px-2 sm:px-3"
                   disabled={isLoading}
                 >
-                  <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-                  Refresh
+                  <RefreshCw className={`h-3 w-3 sm:mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
                 {unreadCount > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleMarkAllAsRead}
-                    className="text-xs"
+                    className="text-xs px-2 sm:px-3"
                   >
-                    <Check className="h-3 w-3 mr-1" />
-                    Mark all read
+                    <Check className="h-3 w-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Mark all read</span>
                   </Button>
                 )}
-                <Button variant="ghost" size="icon" onClick={onClose}>
+                <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 sm:h-9 sm:w-9">
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -179,11 +179,12 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                     variant="outline"
                     size="sm"
                     onClick={loadNotifications}
-                    className="mt-4"
+                    className="mt-4 text-xs sm:text-sm px-3 sm:px-4"
                     disabled={isLoading}
                   >
-                    <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-                    Check for notifications
+                    <RefreshCw className={`h-3 w-3 mr-1 sm:mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                    <span className="hidden sm:inline">Check for notifications</span>
+                    <span className="sm:hidden">Check</span>
                   </Button>
                 </div>
               ) : (
@@ -192,14 +193,14 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                     <div key={notification.id}>
                       <div
                         className={cn(
-                          "p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-4 group",
+                          "p-2 sm:p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-4 group",
                           getNotificationColor(notification.type),
                           !notification.read && "bg-blue-50/50 dark:bg-blue-900/20",
                           selectedNotification === notification.id && "bg-orange-50 dark:bg-orange-900/20"
                         )}
                         onClick={() => handleNotificationClick(notification)}
                       >
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-2 sm:gap-3">
                           <div className="flex-shrink-0 mt-0.5">
                             {getNotificationIcon(notification.type)}
                           </div>

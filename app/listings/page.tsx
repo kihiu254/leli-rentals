@@ -318,7 +318,7 @@ export default function ListingsPage() {
         description: `"${listing.title}" booked for ${duration} day${duration > 1 ? 's' : ''}`,
         duration: 3000,
         action: (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
             <Button 
               variant="outline" 
               size="sm" 
@@ -326,6 +326,7 @@ export default function ListingsPage() {
                 bookingToast.dismiss()
                 router.push('/profile/bookings')
               }}
+              className="text-xs sm:text-sm px-2 sm:px-3"
             >
               View Bookings
             </Button>
@@ -333,6 +334,7 @@ export default function ListingsPage() {
               variant="ghost" 
               size="sm" 
               onClick={() => bookingToast.dismiss()}
+              className="text-xs sm:text-sm px-2 sm:px-3"
             >
               Dismiss
             </Button>
