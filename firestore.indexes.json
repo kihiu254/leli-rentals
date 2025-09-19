@@ -123,27 +123,6 @@
       ]
     },
     {
-      "collectionGroup": "listing_stats",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "listingId", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "listing_stats",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "popularityScore", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "listing_stats",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "trendingScore", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "userReviews",
       "queryScope": "COLLECTION",
       "fields": [
@@ -157,20 +136,6 @@
       "fields": [
         { "fieldPath": "reviewerId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "userProfiles",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "id", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "email", "order": "ASCENDING" }
       ]
     },
     {

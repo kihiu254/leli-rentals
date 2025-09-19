@@ -55,6 +55,7 @@ import { useInteractions } from "@/lib/hooks/use-interactions"
 import { useToast } from "@/hooks/use-toast"
 import { bookingsService } from "@/lib/bookings-service"
 import { paystackService } from "@/lib/paystack-service"
+import { notificationService } from "@/lib/notification-service"
 
 export default function ListingDetailsPage() {
   const params = useParams()
@@ -404,8 +405,33 @@ export default function ListingDetailsPage() {
       toast({
         title: "🎉 Booking Confirmed!",
         description: `Successfully booked "${listing.title}" for ${duration} day${duration > 1 ? 's' : ''} via ${selectedPaymentMethod}. Check your bookings page for details.`,
-        duration: 5000,
+        duration: 8000,
+        action: (
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => router.push('/profile/bookings')}
+            >
+              View Bookings
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => window.location.reload()}
+            >
+              Stay Here
+            </Button>
+          </div>
+        ),
       })
+
+      // Show browser notification
+      try {
+        await notificationService.showBookingConfirmationNotification(listing.title, duration, selectedPaymentMethod)
+      } catch (error) {
+        console.log('Browser notification not available:', error)
+      }
       
       // Close modal and reset form
       setShowBookingModal(false)

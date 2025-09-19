@@ -309,7 +309,8 @@ export default function ListingsPage() {
         cancellationPolicy: 'Free cancellation up to 24 hours before rental start time.'
       }
 
-      await bookingsService.createBooking(bookingData)
+      const bookingId = await bookingsService.createBooking(bookingData)
+      console.log('Booking created successfully with ID:', bookingId)
       
       // Enhanced booking success notification
       toast({

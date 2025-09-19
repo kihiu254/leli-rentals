@@ -2,7 +2,7 @@
 
 import { Suspense, useState, ReactNode } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/toaster"
 import AISupportChat from "@/components/ai-support-chat"
 import { AuthProvider } from "@/components/auth-provider"
 import { NotificationProvider } from "@/lib/notification-context"

@@ -164,8 +164,8 @@ export default function AboutPage() {
               </div>
               <div className="relative">
                 <img
-                  src="/about-story-image.jpg"
-                  alt="Team collaboration"
+                  src="/modern-rental-marketplace-hero-with-cars--apartmen.jpg"
+                  alt="Modern rental marketplace showcasing cars and apartments"
                   className="rounded-2xl shadow-2xl w-full h-96 object-cover"
                   onError={(e) => {
                     const t = e.target as HTMLImageElement
@@ -177,6 +177,47 @@ export default function AboutPage() {
                 <div className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-6 rounded-xl shadow-lg">
                   <div className="text-2xl font-bold">2023</div>
                   <div className="text-sm">Founded</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Additional Story Images */}
+            <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="relative group">
+                <img
+                  src="/luxury-cars-in-modern-showroom.jpg"
+                  alt="Luxury cars in modern showroom"
+                  className="rounded-2xl shadow-lg w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    const t = e.target as HTMLImageElement
+                    t.onerror = null
+                    t.src = "/placeholder.svg"
+                    t.alt = "Luxury cars image not available"
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-2xl"></div>
+                <div className="absolute bottom-6 left-6 text-white">
+                  <h3 className="text-xl font-semibold mb-2">Premium Quality</h3>
+                  <p className="text-sm opacity-90">Curated selection of high-quality rentals</p>
+                </div>
+              </div>
+              
+              <div className="relative group">
+                <img
+                  src="/modern-apartment-city-view.png"
+                  alt="Modern apartment with city view"
+                  className="rounded-2xl shadow-lg w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    const t = e.target as HTMLImageElement
+                    t.onerror = null
+                    t.src = "/placeholder.svg"
+                    t.alt = "Modern apartment image not available"
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-2xl"></div>
+                <div className="absolute bottom-6 left-6 text-white">
+                  <h3 className="text-xl font-semibold mb-2">Trusted Community</h3>
+                  <p className="text-sm opacity-90">Verified hosts and secure transactions</p>
                 </div>
               </div>
             </div>

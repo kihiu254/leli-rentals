@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Bell, X, Check, Trash2, Clock, AlertCircle, MessageCircle, CreditCard, Star, Home, Settings, Calendar } from 'lucide-react'
+import { Bell, X, Check, Trash2, Clock, AlertCircle, MessageCircle, CreditCard, Star, Home, Settings, Calendar, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -71,10 +71,13 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
     
     setIsLoading(true)
     try {
+      console.log('Notification panel: Loading notifications for user:', user.uid)
       const userNotifications = await notificationsService.getUserNotifications(user.uid)
+      console.log('Notification panel: Raw notifications:', userNotifications)
       setNotifications(userNotifications)
       
       const unread = await notificationsService.getUnreadCount(user.uid)
+      console.log('Notification panel: Unread count:', unread)
       setUnreadCount(unread)
     } catch (error) {
       console.error('Error loading notifications:', error)
@@ -133,6 +136,16 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                 )}
               </CardTitle>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={loadNotifications}
+                  className="text-xs"
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
                 {unreadCount > 0 && (
                   <Button
                     variant="ghost"
@@ -162,6 +175,16 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                   <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No notifications yet</p>
                   <p className="text-sm">We'll notify you when something important happens</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={loadNotifications}
+                    className="mt-4"
+                    disabled={isLoading}
+                  >
+                    <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                    Check for notifications
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-1">

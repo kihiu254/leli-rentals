@@ -106,7 +106,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     
     setIsLoading(true)
     try {
+      console.log('Loading notifications for user:', user.uid)
       const userNotifications = await notificationsService.getUserNotifications(user.uid)
+      console.log('Raw notifications from service:', userNotifications)
+      
       // Convert ServiceNotification to Notification type
       const convertedNotifications: Notification[] = userNotifications.map(serviceNotif => ({
         id: serviceNotif.id,
@@ -119,8 +122,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         createdAt: serviceNotif.createdAt,
         updatedAt: serviceNotif.updatedAt
       }))
+      console.log('Converted notifications:', convertedNotifications)
       setNotifications(convertedNotifications)
+      
       const count = await notificationsService.getUnreadCount(user.uid)
+      console.log('Unread count:', count)
       setUnreadCount(count)
     } catch (error) {
       console.error('Error refreshing notifications:', error)
