@@ -4,8 +4,8 @@ import type React from "react"
 
 import { Search, Moon, Sun, User, Bell, ChevronDown, Menu, X } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { useAuth } from "@/lib/auth"
-import { notificationsService } from '@/lib/notifications-service'
+import { useAuthContext } from "@/components/auth-provider"
+import { useNotificationContext } from "@/lib/notification-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTheme } from "next-themes"
@@ -26,34 +26,27 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   const [mounted, setMounted] = useState(false)
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const auth = useAuth()
+  const { user } = useAuthContext()
+  const { unreadCount, refreshNotifications } = useNotificationContext()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Load unread notification count
+  // Refresh notifications when user changes or panel opens
   useEffect(() => {
-    const loadUnreadCount = async () => {
-      if (auth.user?.id) {
-        try {
-          const count = await notificationsService.getUnreadCount(auth.user.id)
-          setUnreadCount(count)
-        } catch (error) {
-          console.error('Error loading unread count:', error)
-        }
-      }
+    if (user?.id) {
+      refreshNotifications()
     }
+  }, [user?.id, refreshNotifications])
 
-    loadUnreadCount()
-    
-    // Refresh count when notification panel opens/closes
-    if (isNotificationPanelOpen) {
-      loadUnreadCount()
+  // Refresh notifications when panel opens/closes
+  useEffect(() => {
+    if (isNotificationPanelOpen && user?.id) {
+      refreshNotifications()
     }
-  }, [auth.user?.id, isNotificationPanelOpen])
+  }, [isNotificationPanelOpen, user?.id, refreshNotifications])
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -64,6 +57,14 @@ export function Header() {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch()
+    }
+  }
+
+  const handleNotificationPanelClose = () => {
+    setIsNotificationPanelOpen(false)
+    // Refresh notifications when panel closes to update unread count
+    if (user?.id) {
+      refreshNotifications()
     }
   }
 
@@ -164,7 +165,7 @@ export function Header() {
             </Button>
           )}
 
-          {auth.user ? (
+          {user ? (
             // Authenticated user section
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Notification Bell */}
@@ -173,11 +174,15 @@ export function Header() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsNotificationPanelOpen(true)}
-                  className="h-8 w-8 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors relative"
+                  className={`h-8 w-8 sm:h-9 sm:w-9 transition-colors relative ${
+                    unreadCount > 0 
+                      ? 'text-orange-500 hover:text-orange-600' 
+                      : 'text-gray-700 dark:text-gray-300 hover:text-orange-500'
+                  }`}
                 >
-                  <Bell className="h-4 w-4" />
+                  <Bell className={`h-4 w-4 ${unreadCount > 0 ? 'animate-pulse' : ''}`} />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-bounce">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
@@ -193,13 +198,13 @@ export function Header() {
                       className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
-                        <AvatarImage src={auth.user.avatar || ""} />
+                        <AvatarImage src={user.avatar || ""} />
                         <AvatarFallback className="bg-purple-500 text-white text-xs sm:text-sm font-medium">
-                          {auth.user.name?.charAt(0) || auth.user.email?.charAt(0) || "U"}
+                          {user.name?.charAt(0) || user.email?.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
                       <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {auth.user.name || auth.user.email?.split("@")[0] || "User"}
+                        {user.name || user.email?.split("@")[0] || "User"}
                       </span>
                       <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
                     </Button>
@@ -365,7 +370,7 @@ export function Header() {
       {/* Notification Panel */}
       <NotificationPanel 
         isOpen={isNotificationPanelOpen}
-        onClose={() => setIsNotificationPanelOpen(false)}
+        onClose={handleNotificationPanelClose}
       />
     </header>
   )
