@@ -192,7 +192,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                     <div key={notification.id}>
                       <div
                         className={cn(
-                          "p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-4",
+                          "p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-4 group",
                           getNotificationColor(notification.type),
                           !notification.read && "bg-blue-50/50 dark:bg-blue-900/20",
                           selectedNotification === notification.id && "bg-orange-50 dark:bg-orange-900/20"
@@ -200,7 +200,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                         onClick={() => handleNotificationClick(notification)}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0 mt-1">
+                          <div className="flex-shrink-0 mt-0.5">
                             {getNotificationIcon(notification.type)}
                           </div>
                           
@@ -208,21 +208,21 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
                                 <h4 className={cn(
-                                  "text-sm font-medium",
+                                  "text-sm font-semibold leading-tight",
                                   !notification.read ? "text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"
                                 )}>
                                   {notification.title}
                                 </h4>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">
                                   {notification.message}
                                 </p>
-                                <div className="flex items-center gap-2 mt-2">
+                                <div className="flex items-center gap-2 mt-1.5">
                                   <Clock className="h-3 w-3 text-gray-400" />
                                   <span className="text-xs text-gray-500">
                                     {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
                                   </span>
                                   {!notification.read && (
-                                    <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                                    <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
                                   )}
                                 </div>
                               </div>
@@ -231,7 +231,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
                                   onClick={(e) => handleDeleteNotification(notification.id, e)}
                                 >
                                   <Trash2 className="h-3 w-3 text-gray-400 hover:text-red-500" />

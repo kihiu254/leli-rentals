@@ -315,25 +315,16 @@ export default function ListingsPage() {
       // Enhanced booking success notification
       toast({
         title: "🎉 Booking Successful!",
-        description: `You've successfully booked "${listing.title}" for ${duration} day${duration > 1 ? 's' : ''}. Check your bookings page for details.`,
-        duration: 8000,
+        description: `"${listing.title}" booked for ${duration} day${duration > 1 ? 's' : ''}`,
+        duration: 5000,
         action: (
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => router.push('/profile/bookings')}
-            >
-              View Bookings
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => router.push(`/listings/details/${listing.id}`)}
-            >
-              View Details
-            </Button>
-          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => router.push('/profile/bookings')}
+          >
+            View Bookings
+          </Button>
         ),
       })
 

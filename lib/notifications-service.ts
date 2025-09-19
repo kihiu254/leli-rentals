@@ -138,9 +138,9 @@ class NotificationsService {
     console.log('Creating booking notification for user:', userId, 'booking:', bookingData)
     
     const statusMessages = {
-      confirmed: 'Your booking has been confirmed!',
-      pending: 'Your booking is pending approval.',
-      cancelled: 'Your booking has been cancelled.'
+      confirmed: 'Booking confirmed!',
+      pending: 'Booking pending approval',
+      cancelled: 'Booking cancelled'
     }
 
     const statusEmojis = {
@@ -153,8 +153,9 @@ class NotificationsService {
       const notificationId = await this.createNotification({
         userId,
         type: 'booking',
-        title: `${statusEmojis[bookingData.status]} Booking ${bookingData.status.charAt(0).toUpperCase() + bookingData.status.slice(1)}`,
-        message: `${statusMessages[bookingData.status]} ${bookingData.listingTitle} from ${bookingData.dates.start.toLocaleDateString()} to ${bookingData.dates.end.toLocaleDateString()}. Total: KSh ${bookingData.totalPrice}`,
+        title: `${statusEmojis[bookingData.status]} ${statusMessages[bookingData.status]}`,
+        message: `${bookingData.listingTitle} • KSh ${bookingData.totalPrice.toLocaleString()}`,
+        link: `/profile/bookings`,
         data: {
           bookingId: bookingData.bookingId,
           status: bookingData.status,
