@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { notificationsService, Notification } from '@/lib/notifications-service'
 import { useAuthContext } from '@/lib/auth-context'
+import { useNotifications } from '@/lib/notification-context'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -54,45 +55,25 @@ const getNotificationColor = (type: string) => {
 
 export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   const { user } = useAuthContext()
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
+  const { notifications, unreadCount, isLoading, refreshNotifications } = useNotifications()
   const [selectedNotification, setSelectedNotification] = useState<string | null>(null)
 
   // Load notifications when panel opens
   React.useEffect(() => {
     if (isOpen && user?.uid) {
-      loadNotifications()
+      refreshNotifications()
     }
-  }, [isOpen, user?.uid])
+  }, [isOpen, user?.uid, refreshNotifications])
 
   const loadNotifications = async () => {
     if (!user?.uid) return
-    
-    setIsLoading(true)
-    try {
-      console.log('Notification panel: Loading notifications for user:', user.uid)
-      const userNotifications = await notificationsService.getUserNotifications(user.uid)
-      console.log('Notification panel: Raw notifications:', userNotifications)
-      setNotifications(userNotifications)
-      
-      const unread = await notificationsService.getUnreadCount(user.uid)
-      console.log('Notification panel: Unread count:', unread)
-      setUnreadCount(unread)
-    } catch (error) {
-      console.error('Error loading notifications:', error)
-    } finally {
-      setIsLoading(false)
-    }
+    refreshNotifications()
   }
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.read) {
       await notificationsService.markAsRead(notification.id)
-      setNotifications(prev => 
-        prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
-      )
-      setUnreadCount(prev => Math.max(0, prev - 1))
+      refreshNotifications() // Refresh to get updated state
     }
     setSelectedNotification(notification.id)
   }
@@ -101,8 +82,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
     event.stopPropagation()
     // For now, we'll just mark as read since we don't have delete functionality
     await notificationsService.markAsRead(notificationId)
-    setNotifications(prev => prev.filter(n => n.id !== notificationId))
-    setUnreadCount(prev => Math.max(0, prev - 1))
+    refreshNotifications() // Refresh to get updated state
     if (selectedNotification === notificationId) {
       setSelectedNotification(null)
     }
@@ -111,8 +91,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   const handleMarkAllAsRead = async () => {
     if (!user?.uid) return
     await notificationsService.markAllAsRead(user.uid)
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-    setUnreadCount(0)
+    refreshNotifications() // Refresh to get updated state
   }
 
   if (!isOpen) return null

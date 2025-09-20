@@ -5,7 +5,7 @@ import type React from "react"
 import { Search, Moon, Sun, User, Bell, ChevronDown, Menu, X } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useAuthContext } from "@/components/auth-provider"
-import { useNotificationContext } from "@/lib/notification-context"
+import { useNotifications } from "@/lib/notification-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTheme } from "next-themes"
@@ -28,7 +28,7 @@ export function Header() {
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { user } = useAuthContext()
-  const { unreadCount, refreshNotifications } = useNotificationContext()
+  const { unreadCount, refreshNotifications } = useNotifications()
 
   useEffect(() => {
     setMounted(true)
