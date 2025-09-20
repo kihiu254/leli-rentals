@@ -25,7 +25,8 @@ import {
   ArrowUp,
   Mic,
   MicOff,
-  Loader2
+  Loader2,
+  MessageSquare
 } from "lucide-react"
 import { aiSupportService, SupportMessage, AIResponse, ChatSession } from "@/lib/ai-support-service"
 import { simpleAISupportService } from "@/lib/simple-ai-support-service"
@@ -49,6 +50,7 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
   const [suggestedActions, setSuggestedActions] = useState<string[]>([])
   const [isRecording, setIsRecording] = useState(false)
   const [isListening, setIsListening] = useState(false)
+  const [showWhatsAppOption, setShowWhatsAppOption] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
@@ -160,6 +162,11 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
       setMessages(prev => [...prev, aiMessage])
       setSuggestedActions(aiResponse.suggestedActions)
       setQuickReplies(aiResponse.quickReplies || [])
+
+      // Check if AI suggests escalating to human support
+      if (aiResponse.shouldEscalate) {
+        setShowWhatsAppOption(true)
+      }
 
       // Save AI message to session
       if (sessionId) {
@@ -275,6 +282,37 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
     console.log(`Feedback for message ${messageId}: ${positive ? 'positive' : 'negative'}`)
   }, [])
 
+  // WhatsApp integration functions
+  const generateWhatsAppMessage = useCallback(() => {
+    const conversationSummary = messages
+      .filter(msg => msg.sender === "user")
+      .slice(-3) // Last 3 user messages
+      .map(msg => msg.content)
+      .join(" | ")
+    
+    const userInfo = user ? `User: ${user.name || user.email}` : "Guest User"
+    const timestamp = new Date().toLocaleString()
+    
+    return `Hello! I need assistance with Leli Rentals.
+
+${userInfo}
+Time: ${timestamp}
+
+Recent conversation:
+${conversationSummary}
+
+Please help me with my inquiry.`
+  }, [messages, user])
+
+  const handleWhatsAppRedirect = useCallback(() => {
+    const whatsappNumber = "+254112081866"
+    const message = encodeURIComponent(generateWhatsAppMessage())
+    const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}?text=${message}`
+    
+    window.open(whatsappUrl, '_blank')
+    setShowWhatsAppOption(false)
+  }, [generateWhatsAppMessage])
+
   if (!isOpen) {
     return (
       <Button 
@@ -322,6 +360,15 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
               aria-label="Call Support"
             >
               <Phone className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 sm:h-7 sm:w-7 text-white hover:bg-white/20"
+              onClick={handleWhatsAppRedirect}
+              aria-label="WhatsApp Support"
+            >
+              <MessageSquare className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             </Button>
             <Button
               variant="ghost"
@@ -463,6 +510,15 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                             >
                               <ThumbsDown className="h-3 w-3 text-red-600" />
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 hover:bg-green-100"
+                              onClick={handleWhatsAppRedirect}
+                              title="Contact human support via WhatsApp"
+                            >
+                              <MessageSquare className="h-3 w-3 text-green-600" />
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -508,6 +564,37 @@ export default function AISupportChat({ isOpen, onToggle }: AISupportChatProps) 
                         </>
                       )}
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* WhatsApp Escalation Option */}
+            {showWhatsAppOption && (
+              <div className="flex justify-start animate-in fade-in-0">
+                <div className="flex items-start gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src="/placeholder-user.jpg" />
+                    <AvatarFallback className="bg-gradient-to-r from-green-500 to-green-600">
+                      <MessageSquare className="h-3 w-3" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MessageSquare className="h-3 w-3 text-green-600" />
+                      <span className="text-xs text-green-600 font-medium">Need Human Support?</span>
+                    </div>
+                    <p className="text-xs text-green-700 mb-2">
+                      I can connect you with our human support team via WhatsApp for personalized assistance.
+                    </p>
+                    <Button
+                      onClick={handleWhatsAppRedirect}
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 h-6"
+                    >
+                      <MessageSquare className="h-3 w-3 mr-1" />
+                      Contact WhatsApp Support
+                    </Button>
                   </div>
                 </div>
               </div>

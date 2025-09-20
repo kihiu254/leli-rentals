@@ -33,7 +33,7 @@ import {
 import { 
   Plus, Edit, Trash2, Eye, Calendar, DollarSign, Star, MapPin, 
   Camera, Upload, Search, Filter, MoreHorizontal, TrendingUp,
-  Users, Clock, CheckCircle, XCircle, AlertCircle
+  Users, Clock, CheckCircle, XCircle, AlertCircle, X, Loader2
 } from "lucide-react"
 import { useAuthContext } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
@@ -72,6 +72,105 @@ export default function ListingsPage() {
     location: "",
     images: [] as string[],
   })
+  const [uploadedImages, setUploadedImages] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
+  const [isUploadingImages, setIsUploadingImages] = useState(false)
+
+  // Handle image upload
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files || !user) return
+
+    const validFiles: File[] = []
+    const previewUrls: string[] = []
+
+    // Validate files
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({
+          title: "File too large",
+          description: `${file.name} is larger than 10MB`,
+          variant: "destructive"
+        })
+        continue
+      }
+
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: `${file.name} is not an image file`,
+          variant: "destructive"
+        })
+        continue
+      }
+
+      validFiles.push(file)
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file)
+      previewUrls.push(previewUrl)
+    }
+
+    if (validFiles.length === 0) return
+
+    setUploadedImages(prev => [...prev, ...validFiles])
+    setImagePreviewUrls(prev => [...prev, ...previewUrls])
+
+    // Upload images to Firebase Storage
+    setIsUploadingImages(true)
+    try {
+      const uploadPromises = validFiles.map(async (file, index) => {
+        const timestamp = Date.now()
+        const fileExtension = file.name.split('.').pop() || 'jpg'
+        const fileName = `listing-${user.uid}-${timestamp}-${index}.${fileExtension}`
+        
+        // Import Firebase Storage functions
+        const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage')
+        const { storage } = await import('@/lib/firebase')
+        
+        const imageRef = ref(storage, `listing-images/${fileName}`)
+        const snapshot = await uploadBytes(imageRef, file)
+        const downloadURL = await getDownloadURL(snapshot.ref)
+        
+        return downloadURL
+      })
+
+      const uploadedUrls = await Promise.all(uploadPromises)
+      setNewListing(prev => ({
+        ...prev,
+        images: [...prev.images, ...uploadedUrls]
+      }))
+
+      toast({
+        title: "Images uploaded successfully!",
+        description: `${validFiles.length} image(s) uploaded`,
+      })
+    } catch (error) {
+      console.error("Error uploading images:", error)
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload images. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsUploadingImages(false)
+    }
+  }
+
+  // Remove image
+  const removeImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index))
+    setImagePreviewUrls(prev => {
+      URL.revokeObjectURL(prev[index])
+      return prev.filter((_, i) => i !== index)
+    })
+    setNewListing(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }))
+  }
 
   // Load user listings
   useEffect(() => {
@@ -80,7 +179,7 @@ export default function ListingsPage() {
       
       setIsLoading(true)
       try {
-        const userListings = await listingsService.getUserListings(user.id)
+        const userListings = await listingsService.getUserListings(user.uid)
         setListings(userListings)
       } catch (error) {
         console.error("Error loading user listings:", error)
@@ -166,7 +265,7 @@ export default function ListingsPage() {
         amenities: [],
         available: true,
         owner: {
-          id: user.id,
+          id: user.uid,
           name: user.name || "Unknown User",
           avatar: user.avatar || "/placeholder.svg",
           rating: 0,
@@ -192,7 +291,7 @@ export default function ListingsPage() {
       })
       
       // Reload listings
-      const userListings = await listingsService.getUserListings(user.id)
+      const userListings = await listingsService.getUserListings(user.uid)
       setListings(userListings)
     } catch (error) {
       toast({
@@ -372,13 +471,65 @@ export default function ListingsPage() {
 
                       <div className="md:col-span-2">
                         <Label>Photos</Label>
+                        
+                        {/* Image Previews */}
+                        {imagePreviewUrls.length > 0 && (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-4">
+                            {imagePreviewUrls.map((url, index) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={url}
+                                  alt={`Preview ${index + 1}`}
+                                  className="w-full h-24 object-cover rounded-lg border"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => removeImage(index)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
                         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                           <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                           <p className="text-gray-600 mb-2">Upload photos of your item</p>
-                          <Button variant="outline" type="button">
-                            <Upload className="h-4 w-4 mr-2" />
-                            Choose Files
-                          </Button>
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            id="image-upload"
+                            disabled={isUploadingImages}
+                          />
+                          <label htmlFor="image-upload">
+                            <Button 
+                              variant="outline" 
+                              type="button" 
+                              asChild
+                              disabled={isUploadingImages}
+                            >
+                              <span>
+                                {isUploadingImages ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Uploading...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Choose Files
+                                  </>
+                                )}
+                              </span>
+                            </Button>
+                          </label>
                           <p className="text-xs text-gray-500 mt-2">JPG, PNG or GIF. Max 10MB each.</p>
                         </div>
                       </div>

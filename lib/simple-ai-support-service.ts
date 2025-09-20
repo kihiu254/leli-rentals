@@ -95,6 +95,16 @@ class SimpleAISupportService {
       quickReplies = ['I need general help', 'How does this work?', 'What can you help me with?']
     }
 
+    // Complex issues that need human support
+    else if (message.includes('complaint') || message.includes('dispute') || message.includes('legal') || 
+             message.includes('urgent') || message.includes('emergency') || message.includes('serious')) {
+      category = 'escalation'
+      confidence = 0.95
+      shouldEscalate = true
+      suggestedActions = ['Escalate to human support', 'Contact WhatsApp support', 'Schedule callback']
+      quickReplies = ['This is urgent', 'I need to speak to a human', 'I have a serious complaint']
+    }
+
     // Generate response based on category
     let responseMessage = ''
     
@@ -110,6 +120,9 @@ class SimpleAISupportService {
         break
       case 'technical':
         responseMessage = "I can help troubleshoot technical issues you're experiencing. I can report bugs, run system diagnostics, or connect you with our technical support team. What technical problem are you facing?"
+        break
+      case 'escalation':
+        responseMessage = "I understand this is a serious matter that requires immediate human attention. I'm connecting you with our human support team via WhatsApp for personalized assistance. They'll be able to help you resolve this issue quickly."
         break
       default:
         responseMessage = "Hello! I'm Sarah, your AI-powered support assistant. I can help you with bookings, payments, account issues, and more. If I can't solve your problem, I'll connect you with a human agent. How can I assist you today?"

@@ -154,11 +154,11 @@ export default function ProfilePage() {
   // Load user data
   useEffect(() => {
     const loadUserData = async () => {
-      if (!user || !user.id) return
+      if (!user || !user.uid) return
 
       try {
         // Load user profile
-        const profile = await profileService.getUserProfile(user.id)
+        const profile = await profileService.getUserProfile(user.uid)
         if (profile) {
           setUserProfile(profile)
           setProfileData({
@@ -171,16 +171,16 @@ export default function ProfilePage() {
           })
         } else {
           // Create default profile if doesn't exist
-          await profileService.createDefaultProfile(user.id, user.name || "", user.email || "")
-          const newProfile = await profileService.getUserProfile(user.id)
+          await profileService.createDefaultProfile(user.uid, user.name || "", user.email || "")
+          const newProfile = await profileService.getUserProfile(user.uid)
           setUserProfile(newProfile)
         }
 
         // Load user reviews, listings, and bookings
         const [reviews, listings, bookings] = await Promise.all([
-          profileService.getUserReviews(user.id),
-          profileService.getUserListings(user.id),
-          profileService.getUserBookings(user.id)
+          profileService.getUserReviews(user.uid),
+          profileService.getUserListings(user.uid),
+          profileService.getUserBookings(user.uid)
         ])
 
         setUserReviews(reviews)
@@ -188,7 +188,7 @@ export default function ProfilePage() {
         setUserBookings(bookings)
 
         // Update stats
-        await profileService.updateUserStats(user.id)
+        await profileService.updateUserStats(user.uid)
       } catch (error) {
         console.error("Error loading user data:", error)
         toast({
@@ -205,7 +205,7 @@ export default function ProfilePage() {
   // Handle image upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (!file || !user || !user.id) return
+    if (!file || !user || !user.uid) return
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       toast({
@@ -227,7 +227,7 @@ export default function ProfilePage() {
 
     setIsUploadingImage(true)
     try {
-      const imageUrl = await profileService.uploadProfileImage(user.id, file)
+      const imageUrl = await profileService.uploadProfileImage(user.uid, file)
       setUserProfile(prev => prev ? { ...prev, avatar: imageUrl } : null)
       toast({
         title: "Image uploaded successfully!",
@@ -301,7 +301,7 @@ export default function ProfilePage() {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || !user.id) {
+    if (!user || !user.uid) {
       toast({
         title: "Error",
         description: "You must be logged in to update your profile.",
@@ -311,7 +311,7 @@ export default function ProfilePage() {
     }
 
     try {
-      await profileService.updateUserProfile(user.id, profileData)
+      await profileService.updateUserProfile(user.uid, profileData)
       
       // Update local state
       setUserProfile(prev => prev ? {
