@@ -304,25 +304,25 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
 
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8 sm:py-16">
         <div className="max-w-md mx-auto">
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold text-foreground">Create Account</CardTitle>
-              <CardDescription className="text-muted-foreground">
+          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+            <CardHeader className="text-center pb-6">
+              <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Create Account</CardTitle>
+              <CardDescription className="text-muted-foreground text-sm sm:text-base">
                 Join Leli Rentals and start renting today
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 px-6 pb-8">
               {/* Social Signup Buttons */}
               <div className="space-y-3">
                 <Button
                   variant="outline"
-                  className="w-full bg-transparent"
+                  className="w-full h-11 bg-white hover:bg-gray-50 border-gray-200 hover:border-gray-300 transition-all duration-200"
                   onClick={() => handleSocialSignup("google")}
                   disabled={isGoogleLoading || isLoading}
                 >
@@ -342,16 +342,16 @@ export default function SignupPage() {
               </div>
 
               {/* Signup Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
                       id="name"
                       type="text"
                       placeholder="Enter your full name"
-                      className="pl-10"
+                      className="pl-10 h-11 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                       value={formData.name}
                       onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                       required
@@ -360,18 +360,18 @@ export default function SignupPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className={`pl-10 pr-10 ${
-                        emailStatus === 'taken' ? 'border-red-500 focus:border-red-500' :
-                        emailStatus === 'available' ? 'border-green-500 focus:border-green-500' :
-                        emailStatus === 'invalid' ? 'border-red-500 focus:border-red-500' :
-                        'border-gray-300'
+                      className={`pl-10 pr-12 h-11 bg-gray-50 transition-all duration-200 ${
+                        emailStatus === 'taken' ? 'border-red-500 focus:border-red-500 focus:ring-red-500' :
+                        emailStatus === 'available' ? 'border-green-500 focus:border-green-500 focus:ring-green-500' :
+                        emailStatus === 'invalid' ? 'border-red-500 focus:border-red-500 focus:ring-red-500' :
+                        'border-gray-200 focus:border-blue-500 focus:ring-blue-500'
                       }`}
                       value={formData.email}
                       onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
@@ -415,14 +415,14 @@ export default function SignupPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Create a password"
-                      className="pl-10 pr-10"
+                      className="pl-10 pr-12 h-11 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                       value={formData.password}
                       onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                       required
@@ -435,9 +435,9 @@ export default function SignupPage() {
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        <EyeOff className="h-4 w-4 text-gray-400" />
                       ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
+                        <Eye className="h-4 w-4 text-gray-400" />
                       )}
                     </Button>
                   </div>
@@ -466,14 +466,14 @@ export default function SignupPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm your password"
-                      className="pl-10 pr-10"
+                      className="pl-10 pr-12 h-11 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                       required
@@ -486,9 +486,9 @@ export default function SignupPage() {
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        <EyeOff className="h-4 w-4 text-gray-400" />
                       ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
+                        <Eye className="h-4 w-4 text-gray-400" />
                       )}
                     </Button>
                   </div>
@@ -516,7 +516,7 @@ export default function SignupPage() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl" 
                   disabled={isLoading || isGoogleLoading || emailStatus === 'taken' || isCheckingEmail}
                 >
                   {isLoading ? "Creating account..." : 
@@ -526,9 +526,9 @@ export default function SignupPage() {
                 </Button>
               </form>
 
-              <div className="text-center text-sm text-muted-foreground">
+              <div className="text-center text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link href="/login" className="text-primary hover:underline font-medium">
+                <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
                   Sign in
                 </Link>
               </div>

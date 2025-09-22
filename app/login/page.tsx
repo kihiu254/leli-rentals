@@ -140,30 +140,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
 
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8 sm:py-16">
         <div className="max-w-md mx-auto">
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
-              <CardDescription className="text-muted-foreground">Sign in to your Leli Rentals account</CardDescription>
+          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+            <CardHeader className="text-center pb-6">
+              <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome Back</CardTitle>
+              <CardDescription className="text-muted-foreground text-sm sm:text-base">Sign in to your Leli Rentals account</CardDescription>
             </CardHeader>
 
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 px-6 pb-8">
               {/* Social Login Buttons */}
               <div className="space-y-3">
                 <Button 
                   variant="outline" 
-                  className="w-full bg-transparent" 
+                  className="w-full h-11 bg-white hover:bg-gray-50 border-gray-200 hover:border-gray-300 transition-all duration-200" 
                   onClick={() => handleSocialLogin("google")}
                   disabled={isGoogleLoading || isLoading}
                 >
                   <Chrome className="mr-2 h-4 w-4" />
                   {isGoogleLoading ? "Signing in..." : "Continue with Google"}
                 </Button>
-                {/* GitHub login removed */}
               </div>
 
               <div className="relative">
@@ -176,16 +175,16 @@ export default function LoginPage() {
               </div>
 
               {/* Login Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className="pl-10"
+                      className="pl-10 h-11 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                       value={formData.email}
                       onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                       required
@@ -194,14 +193,14 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      className="pl-10 pr-10"
+                      className="pl-10 pr-12 h-11 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                       value={formData.password}
                       onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                       required
@@ -214,9 +213,9 @@ export default function LoginPage() {
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        <EyeOff className="h-4 w-4 text-gray-400" />
                       ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
+                        <Eye className="h-4 w-4 text-gray-400" />
                       )}
                     </Button>
                   </div>
@@ -230,26 +229,26 @@ export default function LoginPage() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+                  className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl" 
                   disabled={isLoading || isGoogleLoading}
                 >
                   {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
 
-              <div className="text-center text-sm text-muted-foreground">
+              <div className="text-center text-sm text-gray-600">
                 Don't have an account?{" "}
-                <Link href="/signup" className="text-primary hover:underline font-medium">
+                <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
                   Sign up
                 </Link>
               </div>
-              <div className="text-center text-xs text-muted-foreground mt-4">
+              <div className="text-center text-xs text-gray-500 mt-4">
                 By signing in, you agree to our{" "}
-                <Link href="/terms" className="text-primary hover:underline">
+                <Link href="/terms" className="text-blue-600 hover:text-blue-700 hover:underline">
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link href="/privacy" className="text-primary hover:underline">
+                <Link href="/privacy" className="text-blue-600 hover:text-blue-700 hover:underline">
                   Privacy Policy
                 </Link>
                 .

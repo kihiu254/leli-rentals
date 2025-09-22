@@ -89,7 +89,7 @@ export default function OwnerDashboard() {
   }, [user?.id, toast])
 
   const handleCreateListing = () => {
-    router.push('/listings/create')
+    router.push('/profile/create-listing')
   }
 
   const handleViewListing = (listingId: string) => {
