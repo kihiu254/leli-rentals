@@ -294,9 +294,27 @@ export default function ListingsPage() {
       const userListings = await listingsService.getUserListings(user.uid)
       setListings(userListings)
     } catch (error) {
+      console.error("Error creating listing:", error)
+      
+      let errorMessage = "Please try again or contact support."
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Permission denied')) {
+          errorMessage = "You don't have permission to create listings. Please log out and log back in."
+        } else if (error.message.includes('Network error')) {
+          errorMessage = "Network connection issue. Please check your internet connection."
+        } else if (error.message.includes('Missing required fields')) {
+          errorMessage = "Please fill in all required fields."
+        } else if (error.message.includes('Firebase is not properly configured')) {
+          errorMessage = "System configuration error. Please contact support."
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
       toast({
         title: "Error creating listing",
-        description: "Please try again or contact support.",
+        description: errorMessage,
         variant: "destructive",
       })
     }

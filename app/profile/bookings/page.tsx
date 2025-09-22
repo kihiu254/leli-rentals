@@ -219,14 +219,16 @@ For support, contact: support@lelirentals.com
 
       // Create and download the receipt
       const blob = new Blob([receiptContent], { type: 'text/plain' })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `receipt-${booking.id}-${new Date().toISOString().split('T')[0]}.txt`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      if (typeof window !== 'undefined') {
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `receipt-${booking.id}-${new Date().toISOString().split('T')[0]}.txt`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
       
       toast({
         title: "✅ Receipt downloaded",

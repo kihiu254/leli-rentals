@@ -177,22 +177,47 @@ export const listingsService = {
   // Create new listing
   async createListing(listing: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     if (!isFirebaseInitialized()) {
+      console.error('Firebase is not properly configured')
       throw new Error('Firebase is not properly configured. Please check your environment variables.')
     }
     
     try {
+      console.log('Creating listing with data:', listing)
+      
+      // Validate required fields
+      if (!listing.title || !listing.description || !listing.price || !listing.owner?.id) {
+        throw new Error('Missing required fields: title, description, price, or owner information')
+      }
+      
       const now = new Date()
       const listingData = {
         ...listing,
+        ownerId: listing.owner.id, // Add ownerId for easier querying
         createdAt: now,
         updatedAt: now
       }
       
+      console.log('Listing data to be saved:', listingData)
+      
       const docRef = await addDoc(collection(db, "listings"), listingData)
+      console.log('Listing created successfully with ID:', docRef.id)
+      
       return docRef.id
     } catch (error) {
       console.error("Error creating listing:", error)
-      throw new Error("Failed to create listing")
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('permission')) {
+          throw new Error("Permission denied. Please check your authentication status.")
+        } else if (error.message.includes('network')) {
+          throw new Error("Network error. Please check your internet connection.")
+        } else if (error.message.includes('quota')) {
+          throw new Error("Database quota exceeded. Please try again later.")
+        }
+      }
+      
+      throw new Error(`Failed to create listing: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   },
 

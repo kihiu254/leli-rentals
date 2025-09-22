@@ -10,7 +10,18 @@ export interface NotificationOptions {
   silent?: boolean
 }
 
-class NotificationService {
+export enum NotificationType {
+  BOOKING_REQUEST = 'booking_request',
+  BOOKING_CONFIRMED = 'booking_confirmed',
+  BOOKING_CANCELLED = 'booking_cancelled',
+  NEW_REVIEW = 'new_review',
+  MESSAGE_RECEIVED = 'message_received',
+  PAYMENT_RECEIVED = 'payment_received',
+  SYSTEM_ANNOUNCEMENT = 'system_announcement',
+  CUSTOM = 'custom'
+}
+
+export class NotificationService {
   private permission: NotificationPermission = 'default'
 
   constructor() {
@@ -115,6 +126,59 @@ class NotificationService {
       body: message,
       icon: '/favicon.ico',
       tag: 'error',
+      requireInteraction: true,
+    })
+  }
+
+  // Static methods for triggering notifications
+  static async triggerBookingRequest(ownerId: string, renterName: string, listingTitle: string): Promise<void> {
+    console.log(`Booking request from ${renterName} for ${listingTitle}`)
+    // Implementation would go here
+  }
+
+  static async triggerBookingConfirmed(renterId: string, listingTitle: string): Promise<void> {
+    console.log(`Booking confirmed for ${listingTitle}`)
+    // Implementation would go here
+  }
+
+  static async triggerBookingCancelled(renterId: string, listingTitle: string): Promise<void> {
+    console.log(`Booking cancelled for ${listingTitle}`)
+    // Implementation would go here
+  }
+
+  static async triggerNewReview(ownerId: string, reviewerName: string, listingTitle: string, rating: number): Promise<void> {
+    console.log(`New review from ${reviewerName} for ${listingTitle} - Rating: ${rating}`)
+    // Implementation would go here
+  }
+
+  static async triggerMessageReceived(receiverId: string, senderName: string, listingTitle?: string): Promise<void> {
+    console.log(`Message received from ${senderName}${listingTitle ? ` about ${listingTitle}` : ''}`)
+    // Implementation would go here
+  }
+
+  static async triggerPaymentReceived(ownerId: string, amount: number, listingTitle: string): Promise<void> {
+    console.log(`Payment received: $${amount} for ${listingTitle}`)
+    // Implementation would go here
+  }
+
+  static async triggerSystemAnnouncement(userId: string, title: string, message: string): Promise<void> {
+    console.log(`System announcement for user ${userId}: ${title}`)
+    // Implementation would go here
+  }
+
+  // Create custom notification
+  async createNotification(
+    userId: string,
+    type: NotificationType,
+    title: string,
+    message: string,
+    link?: string
+  ): Promise<void> {
+    await this.showNotification({
+      title,
+      body: message,
+      icon: '/favicon.ico',
+      tag: type,
       requireInteraction: true,
     })
   }

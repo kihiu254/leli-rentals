@@ -144,11 +144,11 @@ export default function FavoritesPage() {
       if (navigator.share) {
         await navigator.share({
           title: "Check out this rental on Leli Rentals",
-          url: `${window.location.origin}/items/${listingId}`,
+          url: `${typeof window !== 'undefined' ? window.location.origin : ''}/items/${listingId}`,
         })
       } else {
         // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(`${window.location.origin}/items/${listingId}`)
+        await navigator.clipboard.writeText(`${typeof window !== 'undefined' ? window.location.origin : ''}/items/${listingId}`)
         toast({
           title: "Link copied!",
           description: "The listing link has been copied to your clipboard.",

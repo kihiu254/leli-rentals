@@ -332,7 +332,7 @@ export default function AccountSettingsPage() {
   const handleDeleteAccount = async () => {
     try {
       // For security, we'll require the user to enter their password
-      const currentPassword = prompt("Please enter your current password to delete your account:")
+      const currentPassword = typeof window !== 'undefined' ? prompt("Please enter your current password to delete your account:") : null
       if (!currentPassword) {
         toast({
           title: "Cancelled",
