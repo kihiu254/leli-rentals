@@ -17,6 +17,7 @@ import { authAPI } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import { fetchSignInMethodsForEmail } from "firebase/auth"
 import { auth } from "@/lib/firebase"
+import { notificationsService } from "@/lib/notifications-service"
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -209,11 +210,19 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      await authAPI.signUp({
+      const user = await authAPI.signUp({
         name: formData.name,
         email: formData.email,
         password: formData.password
       })
+
+      // Create welcome notification for the new user
+      try {
+        await notificationsService.createWelcomeNotification(user.id, formData.name)
+      } catch (notificationError) {
+        console.error('Failed to create welcome notification:', notificationError)
+        // Don't fail the signup if notification creation fails
+      }
 
       toast({
         title: "Account created successfully!",
@@ -263,11 +272,21 @@ export default function SignupPage() {
     if (provider === 'google') {
       setIsGoogleLoading(true)
       try {
-        await authAPI.signInWithGoogle()
+        const { user, isNewUser } = await authAPI.signInWithGoogle()
+        
+        // Create welcome notification for new users only
+        if (isNewUser) {
+          try {
+            await notificationsService.createWelcomeNotification(user.id, user.name ?? undefined)
+          } catch (notificationError) {
+            console.error('Failed to create welcome notification:', notificationError)
+            // Don't fail the signup if notification creation fails
+          }
+        }
         
         toast({
-          title: "Account created successfully!",
-          description: "Welcome to Leli Rentals. Your account has been created.",
+          title: isNewUser ? "Account created successfully!" : "Login successful!",
+          description: isNewUser ? "Welcome to Leli Rentals. Your account has been created." : "Welcome back to Leli Rentals.",
         })
 
         // Redirect to get-started page for account type selection

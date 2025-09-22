@@ -14,6 +14,7 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { authAPI } from "@/lib/auth"
 import { useRouter } from "next/navigation"
+import { notificationsService } from "@/lib/notifications-service"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -108,11 +109,21 @@ export default function LoginPage() {
     if (provider === 'google') {
       setIsGoogleLoading(true)
       try {
-        await authAPI.signInWithGoogle()
+        const { user, isNewUser } = await authAPI.signInWithGoogle()
+        
+        // Create welcome notification for new users only
+        if (isNewUser) {
+          try {
+            await notificationsService.createWelcomeNotification(user.id, user.name ?? undefined)
+          } catch (notificationError) {
+            console.error('Failed to create welcome notification:', notificationError)
+            // Don't fail the login if notification creation fails
+          }
+        }
         
         toast({
-          title: "Login successful!",
-          description: "Welcome back to Leli Rentals.",
+          title: isNewUser ? "Account created successfully!" : "Login successful!",
+          description: isNewUser ? "Welcome to Leli Rentals. Your account has been created." : "Welcome back to Leli Rentals.",
         })
 
         // AuthProvider will handle the redirect automatically

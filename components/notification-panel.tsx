@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Bell, X, Check, Trash2, Clock, AlertCircle, MessageCircle, CreditCard, Star, Home, Settings, Calendar, RefreshCw } from 'lucide-react'
+import { Bell, X, Check, Trash2, Clock, AlertCircle, MessageCircle, CreditCard, Star, Home, Settings, Calendar, RefreshCw, Gift, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +13,7 @@ import { useNotifications } from '@/lib/notification-context'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { useToast } from '@/hooks/use-toast'
 
 interface NotificationPanelProps {
   isOpen: boolean
@@ -31,6 +32,12 @@ const getNotificationIcon = (type: string) => {
       return <MessageCircle className="h-4 w-4 text-green-500" />
     case 'system':
       return <AlertCircle className="h-4 w-4 text-red-500" />
+    case 'review':
+      return <Star className="h-4 w-4 text-yellow-500" />
+    case 'reminder':
+      return <AlertTriangle className="h-4 w-4 text-orange-500" />
+    case 'promotion':
+      return <Gift className="h-4 w-4 text-pink-500" />
     default:
       return <Bell className="h-4 w-4 text-gray-500" />
   }
@@ -48,15 +55,37 @@ const getNotificationColor = (type: string) => {
       return 'border-l-green-500'
     case 'system':
       return 'border-l-red-500'
+    case 'review':
+      return 'border-l-yellow-500'
+    case 'reminder':
+      return 'border-l-orange-500'
+    case 'promotion':
+      return 'border-l-pink-500'
     default:
       return 'border-l-gray-500'
   }
 }
 
+const getPriorityColor = (priority?: string) => {
+  switch (priority) {
+    case 'urgent':
+      return 'bg-red-100 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+    case 'high':
+      return 'bg-orange-100 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
+    case 'medium':
+      return 'bg-blue-100 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+    case 'low':
+      return 'bg-gray-100 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800'
+    default:
+      return 'bg-gray-50 dark:bg-gray-800/20 border-gray-200 dark:border-gray-700'
+  }
+}
+
 export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   const { user } = useAuthContext()
-  const { notifications, unreadCount, isLoading, refreshNotifications } = useNotifications()
+  const { notifications, unreadCount, isLoading, refreshNotifications, requestPermission, isGranted } = useNotifications()
   const [selectedNotification, setSelectedNotification] = useState<string | null>(null)
+  const { toast } = useToast()
 
   // Load notifications when panel opens
   React.useEffect(() => {
@@ -70,8 +99,8 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
     refreshNotifications()
   }
 
-  const handleNotificationClick = async (notification: Notification) => {
-    if (!notification.read) {
+  const handleNotificationClick = async (notification: any) => {
+    if (!notification.isRead) {
       await notificationsService.markAsRead(notification.id)
       refreshNotifications() // Refresh to get updated state
     }
@@ -92,6 +121,38 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
     if (!user?.uid) return
     await notificationsService.markAllAsRead(user.uid)
     refreshNotifications() // Refresh to get updated state
+  }
+
+  const handleCreateSampleNotifications = async () => {
+    if (!user?.uid) return
+    
+    try {
+      await notificationsService.createSampleNotifications(user.uid)
+      toast({
+        title: "Sample Notifications Created",
+        description: "5 sample notifications have been added to your account.",
+      })
+      refreshNotifications()
+    } catch (error) {
+      console.error('Error creating sample notifications:', error)
+      toast({
+        title: "Error",
+        description: "Failed to create sample notifications.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleNotificationAction = (action: any, notification: any) => {
+    if (action.link) {
+      window.location.href = action.link
+      onClose()
+    }
+    
+    toast({
+      title: "Action Executed",
+      description: `Action "${action.label}" was executed for notification.`,
+    })
   }
 
   if (!isOpen) return null
@@ -136,6 +197,17 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                     <span className="hidden sm:inline">Mark all read</span>
                   </Button>
                 )}
+                {!isGranted && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={requestPermission}
+                    className="text-xs px-2 sm:px-3"
+                  >
+                    <Bell className="h-3 w-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Enable Notifications</span>
+                  </Button>
+                )}
                 <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 sm:h-9 sm:w-9">
                   <X className="h-4 w-4" />
                 </Button>
@@ -154,17 +226,29 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                   <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No notifications yet</p>
                   <p className="text-sm">We'll notify you when something important happens</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={loadNotifications}
-                    className="mt-4 text-xs sm:text-sm px-3 sm:px-4"
-                    disabled={isLoading}
-                  >
-                    <RefreshCw className={`h-3 w-3 mr-1 sm:mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                    <span className="hidden sm:inline">Check for notifications</span>
-                    <span className="sm:hidden">Check</span>
-                  </Button>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={loadNotifications}
+                      className="text-xs sm:text-sm px-3 sm:px-4"
+                      disabled={isLoading}
+                    >
+                      <RefreshCw className={`h-3 w-3 mr-1 sm:mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                      <span className="hidden sm:inline">Check for notifications</span>
+                      <span className="sm:hidden">Check</span>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleCreateSampleNotifications}
+                      className="text-xs sm:text-sm px-3 sm:px-4"
+                    >
+                      <Gift className="h-3 w-3 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Create Sample Notifications</span>
+                      <span className="sm:hidden">Sample</span>
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -172,9 +256,9 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                     <div key={notification.id}>
                       <div
                         className={cn(
-                          "p-2 sm:p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-4 group",
+                          "p-3 sm:p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-4 group",
                           getNotificationColor(notification.type),
-                          !notification.read && "bg-blue-50/50 dark:bg-blue-900/20",
+                          !notification.isRead && "bg-blue-50/50 dark:bg-blue-900/20",
                           selectedNotification === notification.id && "bg-orange-50 dark:bg-orange-900/20"
                         )}
                         onClick={() => handleNotificationClick(notification)}
@@ -188,12 +272,12 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
                                 <h4 className={cn(
-                                  "text-sm font-semibold leading-tight",
-                                  !notification.read ? "text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"
+                                  "text-sm sm:text-sm font-semibold leading-tight",
+                                  !notification.isRead ? "text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"
                                 )}>
                                   {notification.title}
                                 </h4>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">
+                                <p className="text-xs sm:text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed">
                                   {notification.message}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1.5">
@@ -201,7 +285,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                                   <span className="text-xs text-gray-500">
                                     {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
                                   </span>
-                                  {!notification.read && (
+                                  {!notification.isRead && (
                                     <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
                                   )}
                                 </div>
@@ -221,6 +305,45 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                           </div>
                         </div>
                         
+                        {/* Priority Badge */}
+                        {(notification as any).priority && (
+                          <div className="mt-2">
+                            <Badge 
+                              variant="outline" 
+                              className={cn(
+                                "text-xs",
+                                (notification as any).priority === 'urgent' && "border-red-500 text-red-600 bg-red-50 dark:bg-red-900/20",
+                                (notification as any).priority === 'high' && "border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-900/20",
+                                (notification as any).priority === 'medium' && "border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-900/20",
+                                (notification as any).priority === 'low' && "border-gray-500 text-gray-600 bg-gray-50 dark:bg-gray-900/20"
+                              )}
+                            >
+                              {(notification as any).priority.toUpperCase()}
+                            </Badge>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        {(notification as any).actions && (notification as any).actions.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {(notification as any).actions.map((action: any, actionIndex: number) => (
+                              <Button
+                                key={actionIndex}
+                                variant={action.variant === 'primary' ? 'default' : action.variant === 'destructive' ? 'destructive' : 'outline'}
+                                size="sm"
+                                className="text-xs h-7 px-2"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleNotificationAction(action, notification)
+                                }}
+                              >
+                                {action.label}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Link */}
                         {notification.link && (
                           <div className="mt-2">
                             <Link 

@@ -133,7 +133,7 @@ export default function ContactPage() {
       icon: Mail,
       title: "Email Support",
       description: "Get help via email",
-      contact: "lelirentals@gmail.com",
+      contact: "lelirentalsmail@gmail.com",
       responseTime: "Within 24 hours",
       color: "bg-blue-500/10 text-blue-600",
       method: "email",

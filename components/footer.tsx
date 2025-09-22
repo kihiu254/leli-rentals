@@ -241,10 +241,10 @@ export function Footer() {
                 <li className="flex items-center space-x-3">
                   <Mail className="h-5 w-5 text-primary flex-shrink-0" />
                   <a
-                    href="mailto:info@lelirentals.com"
+                    href="mailto:lelirentalsmail@gmail.com"
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
-                    lelirentals@gmail.com
+                    lelirentalsmail@gmail.com
                   </a>
                 </li>
               </ul>

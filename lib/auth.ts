@@ -155,7 +155,7 @@ export const authAPI = {
     }
   },
 
-  async signInWithGoogle(): Promise<User> {
+  async signInWithGoogle(): Promise<{ user: User; isNewUser: boolean }> {
     if (!isFirebaseInitialized()) {
       throw new Error('Firebase is not properly configured. Please check your environment variables.')
     }
@@ -163,6 +163,8 @@ export const authAPI = {
     try {
       const result = await signInWithPopup(auth, googleProvider)
       const user = firebaseUserToUser(result.user)
+      const resultWithInfo = result as any
+      const isNewUser = resultWithInfo.additionalUserInfo?.isNewUser || false
       
       // Save/update user profile in database
       try {
@@ -173,7 +175,7 @@ export const authAPI = {
         // Don't throw here, as the auth was successful
       }
       
-      return user
+      return { user, isNewUser }
     } catch (error: any) {
       console.error('Google sign-in error:', error)
       

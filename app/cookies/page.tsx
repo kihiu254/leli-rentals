@@ -181,7 +181,7 @@ export default function CookiesPage() {
                 If you have any questions about our use of cookies or this Cookie Policy, please contact us:
               </p>
               <ul className="list-disc pl-6 mb-8 space-y-2">
-                <li>Email: privacy@lelirentals.com</li>
+                <li>Email: lelirentalsmail@gmail.com</li>
                 <li>Phone: +254112081866</li>
                 <li>Address: 123 Rental Street, Nairobi, Kenya 00100</li>
               </ul>

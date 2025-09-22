@@ -567,7 +567,7 @@ export default function HelpPage() {
                       </div>
                       <div>
                         <div className="font-medium">Email Support</div>
-                        <div className="text-sm text-muted-foreground">support@lelirentals.com</div>
+                        <div className="text-sm text-muted-foreground">lelirentalsmail@gmail.com</div>
                         <div className="text-xs text-muted-foreground">Response within 24 hours</div>
                       </div>
                     </div>

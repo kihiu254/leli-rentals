@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useAuthContext } from './auth-context'
 import { Notification, NotificationContextType } from './types/notification'
 import { notificationsService, Notification as ServiceNotification } from './notifications-service'
+import { useBrowserNotifications } from '../hooks/use-browser-notifications'
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
 
@@ -12,8 +13,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [lastNotificationCount, setLastNotificationCount] = useState(0)
+  const { showNotificationFromData, requestPermission, isGranted } = useBrowserNotifications()
 
-  // Subscribe to notifications when user is authenticated
+  // Subscribe to real-time notifications when user is authenticated
   useEffect(() => {
     if (!user) {
       setNotifications([])
@@ -23,10 +26,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     setIsLoading(true)
 
-    // Load notifications
-    const loadNotifications = async () => {
-      try {
-        const userNotifications = await notificationsService.getUserNotifications(user.uid)
+    // Set up real-time subscription
+    const unsubscribe = notificationsService.subscribeToNotifications(
+      user.uid,
+      (userNotifications) => {
         // Convert ServiceNotification to Notification type
         const convertedNotifications: Notification[] = userNotifications.map(serviceNotif => ({
           id: serviceNotif.id,
@@ -41,16 +44,39 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         }))
         setNotifications(convertedNotifications)
         
-        const unread = await notificationsService.getUnreadCount(user.uid)
+        // Calculate unread count
+        const unread = convertedNotifications.filter(n => !n.isRead).length
         setUnreadCount(unread)
-      } catch (error) {
-        console.error('Error loading notifications:', error)
-      } finally {
+        
+        // Show browser notification for new notifications
+        if (convertedNotifications.length > lastNotificationCount && lastNotificationCount > 0) {
+          const newNotifications = convertedNotifications.slice(0, convertedNotifications.length - lastNotificationCount)
+          newNotifications.forEach(notification => {
+            if (!notification.isRead && isGranted) {
+              showNotificationFromData({
+                title: notification.title,
+                message: notification.message,
+                link: notification.link,
+                type: notification.type,
+                priority: (notification as any).priority
+              })
+            }
+          })
+        }
+        
+        setLastNotificationCount(convertedNotifications.length)
+        setIsLoading(false)
+      },
+      (error) => {
+        console.error('Error in real-time notifications:', error)
         setIsLoading(false)
       }
-    }
+    )
 
-    loadNotifications()
+    // Cleanup subscription on unmount or user change
+    return () => {
+      unsubscribe()
+    }
   }, [user])
 
   const markAsRead = useCallback(async (notificationId: string) => {
@@ -141,7 +167,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     try {
       await notificationsService.createNotification({
         userId: notificationData.userId,
-        type: notificationData.type as 'booking' | 'payment' | 'system' | 'listing' | 'message',
+        type: notificationData.type as any,
         title: notificationData.title,
         message: notificationData.message,
         link: notificationData.link
@@ -161,7 +187,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     markAllAsRead,
     deleteNotification,
     refreshNotifications,
-    addNotification
+    addNotification,
+    requestPermission,
+    isGranted
   }
 
   return (

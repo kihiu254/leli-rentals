@@ -148,7 +148,7 @@ export default function TermsPage() {
 
               <h2 className="text-2xl font-bold text-foreground mb-4">12. Contact Information</h2>
               <p className="mb-8">
-                If you have any questions about these Terms, please contact us at info@lelirentals.com or through our support channels.
+                If you have any questions about these Terms, please contact us at lelirentalsmail@gmail.com or through our support channels.
               </p>
             </div>
 

@@ -1,10 +1,10 @@
 import { db } from './firebase'
-import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore'
+import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp, onSnapshot, Unsubscribe } from 'firebase/firestore'
 
 export interface Notification {
   id: string
   userId: string
-  type: 'booking' | 'payment' | 'system' | 'listing' | 'message'
+  type: 'booking' | 'payment' | 'system' | 'listing' | 'message' | 'review' | 'reminder' | 'promotion'
   title: string
   message: string
   link?: string
@@ -18,11 +18,20 @@ export interface Notification {
   read: boolean
   createdAt: Date
   updatedAt: Date
+  priority?: 'low' | 'medium' | 'high' | 'urgent'
+  actions?: NotificationAction[]
+}
+
+export interface NotificationAction {
+  label: string
+  action: string
+  link?: string
+  variant?: 'primary' | 'secondary' | 'destructive'
 }
 
 export interface NotificationCreateData {
   userId: string
-  type: 'booking' | 'payment' | 'system' | 'listing' | 'message'
+  type: 'booking' | 'payment' | 'system' | 'listing' | 'message' | 'review' | 'reminder' | 'promotion'
   title: string
   message: string
   link?: string
@@ -33,10 +42,13 @@ export interface NotificationCreateData {
     status?: string
     [key: string]: any
   }
+  priority?: 'low' | 'medium' | 'high' | 'urgent'
+  actions?: NotificationAction[]
 }
 
 class NotificationsService {
   private COLLECTION_NAME = 'notifications'
+  private subscriptions: Map<string, Unsubscribe> = new Map()
 
   // Create a new notification
   async createNotification(notificationData: NotificationCreateData): Promise<string> {
@@ -252,6 +264,198 @@ class NotificationsService {
         status: listingData.action
       }
     })
+  }
+
+  // Create welcome notification for new users
+  async createWelcomeNotification(userId: string, userName?: string): Promise<string> {
+    console.log('Creating welcome notification for user:', userId, 'name:', userName)
+    
+    try {
+      const notificationId = await this.createNotification({
+        userId,
+        type: 'system',
+        title: '🔔 Welcome to Leli Rentals!',
+        message: `Welcome! Complete your profile to get started.`,
+        link: '/profile',
+        data: {
+          isWelcome: true,
+          userName: userName || 'New User'
+        }
+      })
+      console.log('Welcome notification created successfully:', notificationId)
+      return notificationId
+    } catch (error) {
+      console.error('Error creating welcome notification:', error)
+      throw error
+    }
+  }
+
+  // Subscribe to real-time notifications for a user
+  subscribeToNotifications(
+    userId: string, 
+    onUpdate: (notifications: Notification[]) => void,
+    onError?: (error: Error) => void
+  ): Unsubscribe {
+    const subscriptionKey = `notifications_${userId}`
+    
+    // Unsubscribe from existing subscription if any
+    if (this.subscriptions.has(subscriptionKey)) {
+      this.subscriptions.get(subscriptionKey)?.()
+    }
+
+    const q = query(
+      collection(db, this.COLLECTION_NAME),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      limit(50)
+    )
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const notifications: Notification[] = []
+        
+        snapshot.forEach((doc) => {
+          const data = doc.data()
+          notifications.push({
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || doc.id),
+            updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt || doc.id)
+          } as Notification)
+        })
+        
+        onUpdate(notifications)
+      },
+      (error) => {
+        console.error('Error in notifications subscription:', error)
+        onError?.(error)
+      }
+    )
+
+    this.subscriptions.set(subscriptionKey, unsubscribe)
+    return unsubscribe
+  }
+
+  // Unsubscribe from notifications for a user
+  unsubscribeFromNotifications(userId: string): void {
+    const subscriptionKey = `notifications_${userId}`
+    const unsubscribe = this.subscriptions.get(subscriptionKey)
+    
+    if (unsubscribe) {
+      unsubscribe()
+      this.subscriptions.delete(subscriptionKey)
+    }
+  }
+
+  // Create sample notifications for testing
+  async createSampleNotifications(userId: string): Promise<void> {
+    const sampleNotifications = [
+      {
+        userId,
+        type: 'booking' as const,
+        title: '🎉 Booking Confirmed!',
+        message: 'Your booking for "Modern Downtown Apartment" has been confirmed for Dec 15-20, 2024.',
+        link: '/profile/bookings',
+        priority: 'high' as const,
+        data: {
+          bookingId: 'booking_123',
+          listingTitle: 'Modern Downtown Apartment',
+          amount: 15000,
+          status: 'confirmed'
+        },
+        actions: [
+          { label: 'View Booking', action: 'view', link: '/profile/bookings', variant: 'primary' as const },
+          { label: 'Contact Host', action: 'contact', link: '/messages', variant: 'secondary' as const }
+        ]
+      },
+      {
+        userId,
+        type: 'message' as const,
+        title: '💬 New Message',
+        message: 'You have a new message from Sarah regarding your booking inquiry.',
+        link: '/messages',
+        priority: 'medium' as const,
+        data: {
+          senderId: 'user_456',
+          senderName: 'Sarah',
+          conversationId: 'conv_789'
+        },
+        actions: [
+          { label: 'Reply', action: 'reply', link: '/messages', variant: 'primary' as const }
+        ]
+      },
+      {
+        userId,
+        type: 'review' as const,
+        title: '⭐ New Review',
+        message: 'John left a 5-star review for your "Professional Camera Equipment" listing!',
+        link: '/profile/listings',
+        priority: 'medium' as const,
+        data: {
+          reviewerId: 'user_789',
+          reviewerName: 'John',
+          rating: 5,
+          listingId: 'listing_456'
+        },
+        actions: [
+          { label: 'View Review', action: 'view', link: '/profile/listings', variant: 'primary' as const }
+        ]
+      },
+      {
+        userId,
+        type: 'reminder' as const,
+        title: '⏰ Booking Reminder',
+        message: 'Your booking for "Luxury Car Rental" starts tomorrow at 10:00 AM.',
+        link: '/profile/bookings',
+        priority: 'urgent' as const,
+        data: {
+          bookingId: 'booking_456',
+          listingTitle: 'Luxury Car Rental',
+          startDate: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        },
+        actions: [
+          { label: 'View Details', action: 'view', link: '/profile/bookings', variant: 'primary' as const },
+          { label: 'Contact Owner', action: 'contact', link: '/messages', variant: 'secondary' as const }
+        ]
+      },
+      {
+        userId,
+        type: 'promotion' as const,
+        title: '🎁 Special Offer!',
+        message: 'Get 20% off your next booking! Use code SAVE20. Valid until Dec 31, 2024.',
+        link: '/listings',
+        priority: 'low' as const,
+        data: {
+          discountCode: 'SAVE20',
+          discountPercent: 20,
+          validUntil: new Date('2024-12-31')
+        },
+        actions: [
+          { label: 'Browse Listings', action: 'browse', link: '/listings', variant: 'primary' as const }
+        ]
+      }
+    ]
+
+    try {
+      for (const notification of sampleNotifications) {
+        await this.createNotification(notification)
+        // Add small delay between notifications
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      console.log('Sample notifications created successfully')
+    } catch (error) {
+      console.error('Error creating sample notifications:', error)
+      throw error
+    }
+  }
+
+  // Clean up all subscriptions
+  cleanup(): void {
+    this.subscriptions.forEach((unsubscribe) => {
+      unsubscribe()
+    })
+    this.subscriptions.clear()
   }
 }
 

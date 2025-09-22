@@ -36,4 +36,6 @@ export interface NotificationContextType {
   deleteNotification: (notificationId: string) => Promise<void>
   refreshNotifications: () => Promise<void>
   addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
+  requestPermission: () => Promise<boolean>
+  isGranted: boolean
 }

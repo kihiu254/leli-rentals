@@ -424,7 +424,7 @@ export default function HomePage() {
                   <p className="text-sm opacity-90 mb-4">
                     Choose your path and set up your profile in minutes
                   </p>
-                  <Button variant="outline" className="get-started-button px-6 py-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300">
+                  <Button variant="outline" className="get-started-button px-6 py-3 border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl">
                     Start Your Journey
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -442,7 +442,7 @@ export default function HomePage() {
                   <p className="text-sm opacity-90 mb-4">
                     Explore thousands of items across all categories
                   </p>
-                  <Button variant="outline" className="get-started-button px-6 py-2 border-white text-white hover:bg-white hover:text-purple-600 transition-all duration-300">
+                  <Button variant="outline" className="get-started-button px-6 py-3 border-2 border-white text-white hover:bg-white hover:text-purple-600 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl">
                     Explore Now
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
