@@ -15,6 +15,13 @@ export const metadata: Metadata = {
   title: "Leli Rentals - Modern Tech-Inspired Rental Marketplace",
   description: "Discover the perfect rental for every occasion with our modern, user-friendly platform",
   generator: "v0.app",
+  icons: {
+    icon: [
+      { url: "/default.svg", type: "image/svg+xml" },
+      { url: "/default.svg", sizes: "any" }
+    ],
+    apple: "/default.svg",
+  },
 }
 
 export const viewport = {
